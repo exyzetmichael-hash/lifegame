@@ -1,10 +1,12 @@
 import type { ReactNode } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { SideNav } from '@/components/layout/SideNav';
 import { BottomNav } from '@/components/layout/BottomNav';
 import { XpBar } from '@/components/layout/XpBar';
 import { IconRenderer } from '@/components/ui/IconRenderer';
 import { ReminderModal } from '@/components/timer/ReminderModal';
+import { ToastContainer } from '@/components/ui/ToastContainer';
 import { useTimerEngine } from '@/hooks/useTimerEngine';
 import { useAchievementEvaluator } from '@/hooks/useAchievementEvaluator';
 import { useHabitPenaltySweep } from '@/hooks/useHabitPenaltySweep';
@@ -15,6 +17,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   useAchievementEvaluator();
   useHabitPenaltySweep();
   useEveningHabitReminder();
+  const location = useLocation();
 
   return (
     <div className="flex h-full min-h-screen">
@@ -34,10 +37,23 @@ export function AppShell({ children }: { children: ReactNode }) {
             <IconRenderer name="Settings" size={18} />
           </Link>
         </header>
-        <main className="flex-1 px-4 sm:px-8 py-6 pb-24 sm:pb-8 max-w-5xl w-full mx-auto">{children}</main>
+        <main className="flex-1 px-4 sm:px-8 py-6 pb-24 sm:pb-8 max-w-5xl w-full mx-auto">
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={location.pathname}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.18, ease: 'easeOut' }}
+            >
+              {children}
+            </motion.div>
+          </AnimatePresence>
+        </main>
       </div>
       <BottomNav />
       <ReminderModal />
+      <ToastContainer />
     </div>
   );
 }

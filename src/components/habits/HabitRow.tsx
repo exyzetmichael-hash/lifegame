@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import clsx from 'clsx';
+import { motion } from 'framer-motion';
 import { Check, Flame, Minus, Plus } from 'lucide-react';
 import type { Habit } from '@/types';
 import { useHabitStore } from '@/store/habitStore';
@@ -48,8 +49,11 @@ export function HabitRow({ habit }: { habit: Habit }) {
       </div>
 
       {habit.kind === 'binary' ? (
-        <button
+        <motion.button
           onClick={() => setBinary(habit.id, today, !completed)}
+          whileTap={{ scale: 0.85 }}
+          animate={completed ? { scale: [1, 1.15, 1] } : { scale: 1 }}
+          transition={{ duration: 0.28 }}
           className={clsx(
             'w-9 h-9 rounded-full flex items-center justify-center border-2 transition-colors shrink-0',
             completed ? 'border-transparent text-white' : 'border-border text-transparent hover:border-text-faint'
@@ -57,7 +61,7 @@ export function HabitRow({ habit }: { habit: Habit }) {
           style={completed ? { background: habit.color } : undefined}
         >
           <Check size={18} />
-        </button>
+        </motion.button>
       ) : (
         <div className="flex items-center gap-1.5 shrink-0">
           <button

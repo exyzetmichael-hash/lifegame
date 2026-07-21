@@ -3,6 +3,7 @@ import { persist } from 'zustand/middleware';
 import type { Achievement, AchievementCondition, Stat, StatKey, XpEvent } from '@/types';
 import { levelFromXp } from '@/lib/leveling';
 import { makeId } from '@/lib/id';
+import { useToastStore } from '@/store/toastStore';
 
 const STAT_DEFS: Record<StatKey, { label: string; icon: string }> = {
   body: { label: 'Тело', icon: 'Dumbbell' },
@@ -110,6 +111,7 @@ export const useGamificationStore = create<GamificationState>()(
       statDefs: STAT_DEFS,
 
       awardXp: (amount, reason, statKey) => {
+        const levelBefore = levelFromXp(get().totalXp).level;
         set((state) => {
           const nextStats = { ...state.stats };
           if (statKey) {
@@ -130,6 +132,15 @@ export const useGamificationStore = create<GamificationState>()(
             xpEvents: [event, ...state.xpEvents].slice(0, 500),
           };
         });
+        const levelAfter = levelFromXp(get().totalXp).level;
+        if (levelAfter > levelBefore) {
+          useToastStore.getState().push({
+            type: 'level-up',
+            title: `Новый уровень: ${levelAfter}!`,
+            description: reason,
+            icon: 'Sparkles',
+          });
+        }
       },
 
       penalize: (amount, reason, statKey) => {
@@ -155,17 +166,24 @@ export const useGamificationStore = create<GamificationState>()(
       },
 
       unlockAchievement: (id) => {
-        set((state) => {
-          const target = state.achievements.find((a) => a.id === id);
-          if (!target || target.unlockedAt) return state;
-          const updated = state.achievements.map((a) =>
+        const before = get().achievements.find((a) => a.id === id);
+        if (!before || before.unlockedAt) return;
+
+        set((state) => ({
+          achievements: state.achievements.map((a) =>
             a.id === id ? { ...a, unlockedAt: new Date().toISOString() } : a
-          );
-          return { achievements: updated };
+          ),
+        }));
+
+        useToastStore.getState().push({
+          type: 'achievement',
+          title: 'Ачивка открыта!',
+          description: before.name,
+          icon: before.icon,
         });
-        const target = get().achievements.find((a) => a.id === id);
-        if (target && target.xpReward) {
-          get().awardXp(target.xpReward, `Ачивка: ${target.name}`);
+
+        if (before.xpReward) {
+          get().awardXp(before.xpReward, `Ачивка: ${before.name}`);
         }
       },
     }),

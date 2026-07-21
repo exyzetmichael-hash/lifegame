@@ -1,4 +1,5 @@
 import clsx from 'clsx';
+import { motion } from 'framer-motion';
 import { format, isPast, isToday } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { Trash2 } from 'lucide-react';
@@ -15,8 +16,11 @@ export function TodoRow({ todo }: { todo: Todo }) {
 
   return (
     <div className="group flex items-center gap-3 rounded-xl border border-border bg-surface/50 px-3.5 py-2.5">
-      <button
+      <motion.button
         onClick={() => toggleComplete(todo.id)}
+        whileTap={{ scale: 0.8 }}
+        animate={todo.completed ? { scale: [1, 1.25, 1] } : { scale: 1 }}
+        transition={{ duration: 0.28 }}
         className={clsx(
           'w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors',
           todo.completed ? 'border-transparent' : 'hover:border-text'
