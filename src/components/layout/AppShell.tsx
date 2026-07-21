@@ -7,10 +7,12 @@ import { IconRenderer } from '@/components/ui/IconRenderer';
 import { ReminderModal } from '@/components/timer/ReminderModal';
 import { useTimerEngine } from '@/hooks/useTimerEngine';
 import { useAchievementEvaluator } from '@/hooks/useAchievementEvaluator';
+import { useHabitPenaltySweep } from '@/hooks/useHabitPenaltySweep';
 
 export function AppShell({ children }: { children: ReactNode }) {
   useTimerEngine();
   useAchievementEvaluator();
+  useHabitPenaltySweep();
 
   return (
     <div className="flex h-full min-h-screen">

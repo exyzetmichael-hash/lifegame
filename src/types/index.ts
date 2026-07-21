@@ -67,6 +67,8 @@ export interface HabitLog {
   date: string; // yyyy-MM-dd
   value: number;
   completed: boolean;
+  /** True if this log was auto-created by the penalty sweep (missed day), not by the user. */
+  penalized?: boolean;
 }
 
 export type Priority = 'p1' | 'p2' | 'p3' | 'p4';
