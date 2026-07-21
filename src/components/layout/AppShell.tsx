@@ -11,12 +11,14 @@ import { useTimerEngine } from '@/hooks/useTimerEngine';
 import { useAchievementEvaluator } from '@/hooks/useAchievementEvaluator';
 import { useHabitPenaltySweep } from '@/hooks/useHabitPenaltySweep';
 import { useEveningHabitReminder } from '@/hooks/useEveningHabitReminder';
+import { useSupabaseSync } from '@/lib/sync/bootstrap';
 
 export function AppShell({ children }: { children: ReactNode }) {
   useTimerEngine();
   useAchievementEvaluator();
   useHabitPenaltySweep();
   useEveningHabitReminder();
+  useSupabaseSync();
   const location = useLocation();
 
   return (
