@@ -1,0 +1,9 @@
+{
+  "projectId": "34856905-8f67-4b5c-8838-ebf2eaa0bd58",
+  "shape": "package",
+  "pkg": "lifequest",
+  "globalName": "LifeQuest",
+  "srcDir": "src/components/ui",
+  "tsconfig": "tsconfig.app.json",
+  "cssEntry": "dist/assets/index-CC6Tfq5t.css"
+}
