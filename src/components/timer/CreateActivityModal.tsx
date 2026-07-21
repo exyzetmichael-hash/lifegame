@@ -41,25 +41,25 @@ export function CreateActivityModal({ open, onClose, onCreated }: CreateActivity
     <Modal open={open} onClose={() => { reset(); onClose(); }} title="Новая активность">
       <div className="flex flex-col gap-4">
         <div>
-          <label className="text-xs text-text-dim mb-1.5 block">Название</label>
+          <label className="text-xs text-text-2 mb-1.5 block">Название</label>
           <input
             autoFocus
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Например, Медитация"
-            className="w-full bg-surface border border-border rounded-xl px-3 py-2.5 text-sm outline-none focus:border-primary transition-colors"
+            className="w-full bg-surface border border-border rounded-xl px-3 py-2.5 text-sm outline-none focus:border-accent transition-colors"
             onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
           />
         </div>
 
         <div>
-          <label className="text-xs text-text-dim mb-1.5 block">Цвет</label>
+          <label className="text-xs text-text-2 mb-1.5 block">Цвет</label>
           <div className="flex flex-wrap gap-2">
             {ACTIVITY_COLORS.map((c) => (
               <button
                 key={c}
                 onClick={() => setColor(c)}
-                className={clsx('w-8 h-8 rounded-full transition-transform', color === c && 'ring-2 ring-offset-2 ring-offset-bg-elevated ring-white scale-110')}
+                className={clsx('w-8 h-8 rounded-full border-2', color === c ? 'border-text' : 'border-transparent')}
                 style={{ background: c }}
               />
             ))}
@@ -67,7 +67,7 @@ export function CreateActivityModal({ open, onClose, onCreated }: CreateActivity
         </div>
 
         <div>
-          <label className="text-xs text-text-dim mb-1.5 block">Иконка</label>
+          <label className="text-xs text-text-2 mb-1.5 block">Иконка</label>
           <div className="flex flex-wrap gap-2">
             {ACTIVITY_ICON_CHOICES.map((ic) => (
               <button
@@ -75,7 +75,7 @@ export function CreateActivityModal({ open, onClose, onCreated }: CreateActivity
                 onClick={() => setIcon(ic)}
                 className={clsx(
                   'w-9 h-9 rounded-xl flex items-center justify-center border transition-colors',
-                  icon === ic ? 'border-primary bg-primary/15 text-primary' : 'border-border text-text-dim hover:text-text'
+                  icon === ic ? 'border-accent bg-accent/15 text-accent' : 'border-border text-text-2 hover:text-text'
                 )}
               >
                 <IconRenderer name={ic} size={17} />
@@ -85,7 +85,7 @@ export function CreateActivityModal({ open, onClose, onCreated }: CreateActivity
         </div>
 
         <div>
-          <label className="text-xs text-text-dim mb-1.5 block">Какой стат прокачивает</label>
+          <label className="text-xs text-text-2 mb-1.5 block">Какой стат прокачивает</label>
           <div className="flex flex-wrap gap-2">
             {(Object.keys(statDefs) as StatKey[]).map((key) => (
               <button
@@ -93,7 +93,7 @@ export function CreateActivityModal({ open, onClose, onCreated }: CreateActivity
                 onClick={() => setStatKey(key)}
                 className={clsx(
                   'px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors',
-                  statKey === key ? 'border-accent bg-accent/15 text-accent' : 'border-border text-text-dim hover:text-text'
+                  statKey === key ? 'border-accent bg-accent/15 text-accent' : 'border-border text-text-2 hover:text-text'
                 )}
               >
                 {statDefs[key].label}

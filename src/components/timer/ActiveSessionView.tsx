@@ -76,12 +76,12 @@ export function ActiveSessionView() {
 
   return (
     <div className="flex flex-col items-center gap-6 py-4">
-      <div className="flex items-center gap-2 text-text-dim text-sm">
+      <div className="flex items-center gap-2 text-text-2 text-sm">
         <IconRenderer name={activity.icon} size={16} style={{ color: activity.color }} />
         <span>{activity.name}</span>
         {isPomodoro && (
           <span
-            className={`ml-1 px-2 py-0.5 rounded-full text-[11px] font-medium ${isBreak ? 'bg-success/15 text-success' : 'bg-primary/15 text-primary'}`}
+            className={`ml-1 px-2 py-0.5 rounded-full text-[11px] font-medium ${isBreak ? 'bg-success/15 text-success' : 'bg-accent/15 text-accent'}`}
           >
             {phaseLabel(active.phase)}
           </span>
@@ -120,16 +120,16 @@ export function ActiveSessionView() {
           )}
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-1">
-          <span className="font-display text-4xl font-semibold tabular-nums">{formatDuration(displaySeconds)}</span>
+          <span className="serif text-4xl font-semibold tabular-nums">{formatDuration(displaySeconds)}</span>
           {isPomodoro && (
-            <span className="text-xs text-text-faint">Всего: {formatDuration(totalSessionSeconds)}</span>
+            <span className="text-xs text-text-3">Всего: {formatDuration(totalSessionSeconds)}</span>
           )}
-          {isPaused && <span className="text-xs text-warning mt-1">На паузе</span>}
+          {isPaused && <span className="text-xs text-p2 mt-1">На паузе</span>}
         </div>
       </div>
 
       <div className="flex items-center gap-3">
-        <Button variant="danger" size="lg" className="rounded-full w-14 h-14 p-0" onClick={() => stop()}>
+        <Button variant="surface" size="lg" className="rounded-full w-14 h-14 p-0" onClick={() => stop()}>
           <Square size={20} />
         </Button>
         <Button
@@ -148,7 +148,7 @@ export function ActiveSessionView() {
       </div>
 
       {isPomodoro && (
-        <div className="text-xs text-text-faint">Помодоро {(active.cyclesCompleted ?? 0) + 1}</div>
+        <div className="text-xs text-text-3">Помодоро {(active.cyclesCompleted ?? 0) + 1}</div>
       )}
     </div>
   );

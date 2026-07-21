@@ -14,7 +14,8 @@ export function IconRenderer({ name, ...props }: IconRendererProps) {
 }
 
 export const ACTIVITY_ICON_CHOICES = [
-  'BookOpen', 'Dumbbell', 'Target', 'Brush', 'Code2', 'Music', 'Briefcase',
+  'BookOpen', 'Bookmark', 'Dumbbell', 'BrainCircuit', 'PenLine', 'Sparkles',
+  'Target', 'Droplet', 'Home', 'Code2', 'Music', 'Briefcase',
   'GraduationCap', 'Utensils', 'Bed', 'Bike', 'Guitar', 'Camera', 'Languages',
-  'Palette', 'PenTool', 'Gamepad2', 'Heart', 'Leaf', 'Coffee',
+  'Palette', 'Gamepad2', 'Heart', 'Leaf', 'Coffee',
 ];

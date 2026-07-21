@@ -1,48 +1,50 @@
 import type { ReactNode } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Search } from 'lucide-react';
 import { SideNav } from '@/components/layout/SideNav';
 import { BottomNav } from '@/components/layout/BottomNav';
-import { XpBar } from '@/components/layout/XpBar';
-import { IconRenderer } from '@/components/ui/IconRenderer';
+import { MoreSheet } from '@/components/layout/MoreSheet';
 import { ReminderModal } from '@/components/timer/ReminderModal';
 import { ToastContainer } from '@/components/ui/ToastContainer';
+import { Snackbar } from '@/components/ui/Snackbar';
+import { CommandPalette } from '@/components/command/CommandPalette';
+import { TaskDetailPanel } from '@/components/todos/TaskDetailPanel';
 import { useTimerEngine } from '@/hooks/useTimerEngine';
 import { useAchievementEvaluator } from '@/hooks/useAchievementEvaluator';
 import { useHabitPenaltySweep } from '@/hooks/useHabitPenaltySweep';
 import { useEveningHabitReminder } from '@/hooks/useEveningHabitReminder';
+import { useApplyTheme } from '@/hooks/useApplyTheme';
 import { useSupabaseSync } from '@/lib/sync/bootstrap';
+import { useUiStore } from '@/store/uiStore';
 
 export function AppShell({ children }: { children: ReactNode }) {
   useTimerEngine();
   useAchievementEvaluator();
   useHabitPenaltySweep();
   useEveningHabitReminder();
+  useApplyTheme();
   useSupabaseSync();
   const location = useLocation();
+  const openPalette = useUiStore((s) => s.openPalette);
 
   return (
-    <div className="flex h-full min-h-screen">
+    <div className="flex h-full min-h-screen bg-canvas">
       <SideNav />
-      <div className="flex-1 flex flex-col min-w-0">
-        <header className="flex items-center gap-4 px-4 sm:px-8 py-3 border-b border-border sticky top-0 z-30 bg-bg/80 backdrop-blur-md">
-          <div className="sm:hidden flex items-center gap-2 shrink-0">
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-primary to-accent glow-primary" />
-          </div>
-          <div className="flex-1 max-w-sm">
-            <XpBar />
-          </div>
-          <Link
-            to="/settings"
-            className="hidden sm:inline-flex text-text-dim hover:text-text p-2 rounded-lg hover:bg-surface-hover transition-colors"
-          >
-            <IconRenderer name="Settings" size={18} />
-          </Link>
+      <div className="flex-1 flex flex-col min-w-0 relative overflow-x-hidden">
+        <header className="flex sm:hidden items-center gap-3 px-4 py-3 border-b border-border bg-surface sticky top-0 z-30 pt-[calc(env(safe-area-inset-top)+12px)]">
+          <span className="w-6 h-6 rounded-md bg-accent text-white flex items-center justify-center text-[11px] font-bold shrink-0">
+            L
+          </span>
+          <span className="text-[13px] font-semibold flex-1">LifeQuest</span>
+          <button onClick={openPalette} className="text-text-2 p-1.5 rounded-sm hover:bg-sunken transition-colors">
+            <Search size={18} />
+          </button>
         </header>
         <main className="flex-1 px-4 sm:px-8 py-6 pb-24 sm:pb-8 max-w-5xl w-full mx-auto">
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
-              key={location.pathname}
+              key={location.pathname + location.search}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
@@ -52,10 +54,14 @@ export function AppShell({ children }: { children: ReactNode }) {
             </motion.div>
           </AnimatePresence>
         </main>
+        <TaskDetailPanel />
       </div>
       <BottomNav />
+      <MoreSheet />
       <ReminderModal />
       <ToastContainer />
+      <Snackbar />
+      <CommandPalette />
     </div>
   );
 }

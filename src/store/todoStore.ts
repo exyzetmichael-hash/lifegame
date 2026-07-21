@@ -19,10 +19,12 @@ interface TodoState {
     projectId: string | null;
     priority: Priority;
     dueDate: string | null;
+    labels?: string[];
   }) => Todo;
   updateTodo: (id: string, patch: Partial<Omit<Todo, 'id'>>) => void;
   toggleComplete: (id: string) => void;
   deleteTodo: (id: string) => void;
+  restoreTodo: (todo: Todo) => void;
 }
 
 export const useTodoStore = create<TodoState>()(
@@ -50,6 +52,7 @@ export const useTodoStore = create<TodoState>()(
           createdAt: new Date().toISOString(),
           completed: false,
           completedAt: null,
+          labels: [],
           ...input,
         };
         set((state) => ({ todos: [todo, ...state.todos] }));
@@ -79,6 +82,10 @@ export const useTodoStore = create<TodoState>()(
 
       deleteTodo: (id) => {
         set((state) => ({ todos: state.todos.filter((t) => t.id !== id) }));
+      },
+
+      restoreTodo: (todo) => {
+        set((state) => ({ todos: [todo, ...state.todos] }));
       },
     }),
     { name: 'lifequest-todos' }

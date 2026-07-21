@@ -31,8 +31,6 @@ export function DashboardPage() {
   const activities = useActivityStore((s) => s.activities);
   const budgets = useActivityStore((s) => s.budgets);
   const totalXp = useGamificationStore((s) => s.totalXp);
-  const stats = useGamificationStore((s) => s.stats);
-  const statDefs = useGamificationStore((s) => s.statDefs);
   const { level } = overallLevel(totalXp);
 
   const { start, end } = periodRange(period);
@@ -56,42 +54,48 @@ export function DashboardPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center gap-2">
-        {PERIODS.map((p) => (
-          <button
-            key={p.key}
-            onClick={() => setPeriod(p.key)}
-            className={clsx(
-              'px-3.5 py-1.5 rounded-lg text-sm font-medium border transition-colors',
-              period === p.key ? 'border-primary bg-primary/15 text-primary' : 'border-border text-text-dim hover:text-text'
-            )}
-          >
-            {p.label}
-          </button>
-        ))}
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <h1 className="serif text-2xl font-medium flex items-center gap-2.5">
+          <IconRenderer name="BarChart3" size={24} />
+          Дашборд
+        </h1>
+        <div className="flex gap-0.5 bg-sunken border border-border rounded-btn p-0.5 w-fit">
+          {PERIODS.map((p) => (
+            <button
+              key={p.key}
+              onClick={() => setPeriod(p.key)}
+              className={clsx(
+                'px-3.5 py-1.5 rounded-sm text-sm transition-colors',
+                period === p.key ? 'bg-surface text-text font-semibold shadow-pop' : 'text-text-2 hover:text-text'
+              )}
+            >
+              {p.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <Card className="p-4">
-          <div className="text-xs text-text-dim mb-1">Время</div>
-          <div className="font-display text-xl font-semibold">{formatHoursMinutes(totalSeconds)}</div>
+          <div className="text-xs text-text-3 mb-1.5">Время</div>
+          <div className="serif text-[28px] font-medium tabular-nums">{formatHoursMinutes(totalSeconds)}</div>
         </Card>
         <Card className="p-4">
-          <div className="text-xs text-text-dim mb-1">Сессий</div>
-          <div className="font-display text-xl font-semibold">{inRange.length}</div>
+          <div className="text-xs text-text-3 mb-1.5">Сессий</div>
+          <div className="serif text-[28px] font-medium tabular-nums">{inRange.length}</div>
         </Card>
         <Card className="p-4">
-          <div className="text-xs text-text-dim mb-1">Уровень</div>
-          <div className="font-display text-xl font-semibold">{level}</div>
+          <div className="text-xs text-text-3 mb-1.5">Уровень</div>
+          <div className="serif text-[28px] font-medium tabular-nums">{level}</div>
         </Card>
         <Card className="p-4">
-          <div className="text-xs text-text-dim mb-1">Всего XP</div>
-          <div className="font-display text-xl font-semibold">{totalXp}</div>
+          <div className="text-xs text-text-3 mb-1.5">Всего XP</div>
+          <div className="serif text-[28px] font-medium tabular-nums">{totalXp}</div>
         </Card>
       </div>
 
       <Card>
-        <h2 className="font-display font-semibold mb-4">Активность по дням</h2>
+        <h2 className="text-[13px] font-semibold text-text-2 mb-4">Активность по дням</h2>
         <div className="h-40">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={series} margin={{ top: 4, right: 4, left: 4, bottom: 0 }}>
@@ -99,22 +103,22 @@ export function DashboardPage() {
                 dataKey="label"
                 axisLine={false}
                 tickLine={false}
-                tick={{ fill: 'var(--color-text-faint)', fontSize: 11 }}
+                tick={{ fill: 'var(--color-text-3)', fontSize: 11 }}
               />
               <Tooltip
-                cursor={{ fill: 'var(--color-surface-hover)' }}
+                cursor={{ fill: 'var(--color-sunken)' }}
                 contentStyle={{
-                  background: 'var(--color-bg-elevated)',
+                  background: 'var(--color-surface)',
                   border: '1px solid var(--color-border)',
-                  borderRadius: 12,
+                  borderRadius: 10,
                   fontSize: 12,
                 }}
                 formatter={(value) => [formatHoursMinutes(Number(value) || 0), 'Время']}
                 labelFormatter={() => ''}
               />
-              <Bar dataKey="seconds" radius={[6, 6, 6, 6]}>
+              <Bar dataKey="seconds" radius={[4, 4, 2, 2]}>
                 {series.map((entry) => (
-                  <Cell key={entry.date} fill="var(--color-primary)" fillOpacity={entry.seconds > 0 ? 1 : 0.25} />
+                  <Cell key={entry.date} fill="var(--color-accent)" fillOpacity={entry.seconds > 0 ? 1 : 0.3} />
                 ))}
               </Bar>
             </BarChart>
@@ -123,19 +127,19 @@ export function DashboardPage() {
       </Card>
 
       <Card>
-        <h2 className="font-display font-semibold mb-1">Когда я продуктивнее</h2>
-        <p className="text-xs text-text-dim mb-4">По дням недели, за всё время</p>
+        <h2 className="text-[13px] font-semibold text-text-2 mb-1">Когда я продуктивнее</h2>
+        <p className="text-xs text-text-3 mb-4">По дням недели, за всё время</p>
         <div className="flex items-end gap-2 h-28">
           {weekdayTotals.map((seconds, idx) => (
             <div key={idx} className="flex-1 flex flex-col items-center gap-1.5 h-full justify-end">
               <div
-                className="w-full rounded-md transition-all"
+                className="w-full rounded-[4px] transition-all"
                 style={{
                   height: `${Math.max(4, (seconds / maxWeekdaySeconds) * 100)}%`,
                   background: seconds > 0 ? 'var(--color-accent)' : 'var(--color-border)',
                 }}
               />
-              <span className="text-[11px] text-text-faint">{WEEKDAY_LABELS[idx]}</span>
+              <span className="text-[11px] text-text-3">{WEEKDAY_LABELS[idx]}</span>
             </div>
           ))}
         </div>
@@ -143,8 +147,8 @@ export function DashboardPage() {
 
       {budgets.length > 0 && (
         <Card>
-          <h2 className="font-display font-semibold mb-1">Цели по времени</h2>
-          <p className="text-xs text-text-dim mb-4">На этой неделе</p>
+          <h2 className="text-[13px] font-semibold text-text-2 mb-1">Цели по времени</h2>
+          <p className="text-xs text-text-3 mb-4">На этой неделе</p>
           <div className="flex flex-col gap-3">
             {budgets.map((b) => {
               const activity = activities.find((a) => a.id === b.activityId);
@@ -154,19 +158,16 @@ export function DashboardPage() {
               const pct = targetSeconds > 0 ? doneSeconds / targetSeconds : 0;
               return (
                 <div key={b.id}>
-                  <div className="flex justify-between text-sm mb-1">
-                    <span className="flex items-center gap-1.5">
-                      <IconRenderer name={activity.icon} size={14} style={{ color: activity.color }} />
+                  <div className="flex justify-between text-sm mb-1.5">
+                    <span className="flex items-center gap-1.5 text-text-2">
+                      <span className="w-2 h-2 rounded-full" style={{ background: activity.color }} />
                       {activity.name}
                     </span>
-                    <span className="text-text-dim">
+                    <span className="text-text-2 tabular-nums">
                       {formatHoursMinutes(doneSeconds)} / {b.targetHoursPerWeek} ч
                     </span>
                   </div>
-                  <ProgressBar
-                    value={pct}
-                    color={pct >= 1 ? 'var(--color-success)' : activity.color}
-                  />
+                  <ProgressBar value={pct} color={pct >= 1 ? 'var(--color-success)' : activity.color} />
                 </div>
               );
             })}
@@ -175,48 +176,30 @@ export function DashboardPage() {
       )}
 
       <Card>
-        <h2 className="font-display font-semibold mb-4">По категориям</h2>
+        <h2 className="text-[13px] font-semibold text-text-2 mb-4">По категориям</h2>
         {sortedActivities.length === 0 ? (
-          <p className="text-sm text-text-dim">За этот период пока пусто.</p>
+          <p className="text-sm text-text-3">За этот период пока пусто.</p>
         ) : (
           <div className="flex flex-col gap-3">
             {sortedActivities.map(([activityId, seconds]) => {
               const activity = activities.find((a) => a.id === activityId);
               return (
-                <div key={activityId} className="flex items-center gap-3">
-                  <div
-                    className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
-                    style={{ background: `${activity?.color ?? '#7c3aed'}22`, color: activity?.color ?? '#7c3aed' }}
-                  >
-                    <IconRenderer name={activity?.icon ?? 'Circle'} size={15} />
+                <div key={activityId} className="flex items-center gap-2.5">
+                  <span className="flex items-center gap-1.5 text-[13px] text-text-2 w-[110px] shrink-0 truncate">
+                    <span className="w-2 h-2 rounded-full shrink-0" style={{ background: activity?.color ?? 'var(--color-accent)' }} />
+                    <span className="truncate">{activity?.name ?? 'Удалено'}</span>
+                  </span>
+                  <div className="flex-1">
+                    <ProgressBar value={seconds / maxActivitySeconds} color={activity?.color ?? 'var(--color-accent)'} className="h-2" trackClassName="h-2" />
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex justify-between text-sm mb-1">
-                      <span className="truncate">{activity?.name ?? 'Удалено'}</span>
-                      <span className="text-text-dim shrink-0 ml-2">{formatHoursMinutes(seconds)}</span>
-                    </div>
-                    <ProgressBar value={seconds / maxActivitySeconds} color={activity?.color ?? 'var(--color-primary)'} />
-                  </div>
+                  <span className="text-[13px] text-text-2 tabular-nums w-[52px] text-right shrink-0">
+                    {formatHoursMinutes(seconds)}
+                  </span>
                 </div>
               );
             })}
           </div>
         )}
-      </Card>
-
-      <Card>
-        <h2 className="font-display font-semibold mb-4">Статы персонажа</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          {Object.values(stats).map((stat) => (
-            <div key={stat.key} className="flex items-center gap-2.5 rounded-xl border border-border px-3 py-2.5">
-              <IconRenderer name={statDefs[stat.key].icon} size={18} className="text-accent shrink-0" />
-              <div className="min-w-0">
-                <div className="text-xs text-text-dim truncate">{stat.label}</div>
-                <div className="font-display font-semibold text-sm">Ур. {stat.level}</div>
-              </div>
-            </div>
-          ))}
-        </div>
       </Card>
     </div>
   );

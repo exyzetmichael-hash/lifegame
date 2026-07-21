@@ -34,9 +34,9 @@ function hexToRgb(hex) {
 }
 
 function makeIcon(size) {
-  const bg = hexToRgb('#0b0e1a');
-  const ring = hexToRgb('#7c3aed');
-  const glow = hexToRgb('#22d3ee');
+  const bg = hexToRgb('#201e1b');
+  const ring = hexToRgb('#db5a45');
+  const glow = hexToRgb('#e0912f');
   const cx = size / 2;
   const cy = size / 2;
   const rowBytes = size * 4;

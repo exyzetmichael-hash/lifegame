@@ -16,7 +16,7 @@ export function SessionHistoryList() {
 
   if (recent.length === 0) {
     return (
-      <Card className="text-center text-text-dim text-sm py-10">
+      <Card className="text-center text-text-2 text-sm py-10">
         Пока нет записей. Запусти таймер или добавь запись вручную.
       </Card>
     );
@@ -42,20 +42,20 @@ export function SessionHistoryList() {
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1.5 text-sm font-medium truncate">
                 {activity?.name ?? 'Удалённая активность'}
-                {s.manual && <PencilLine size={12} className="text-text-faint shrink-0" />}
-                {s.autoStopped && <Zap size={12} className="text-warning shrink-0" />}
+                {s.manual && <PencilLine size={12} className="text-text-3 shrink-0" />}
+                {s.autoStopped && <Zap size={12} className="text-p2 shrink-0" />}
               </div>
-              <div className="text-xs text-text-faint">
+              <div className="text-xs text-text-3">
                 {dayLabel} · {format(started, 'HH:mm')}
                 {s.note ? ` · ${s.note}` : ''}
               </div>
             </div>
-            <div className="text-sm font-display font-medium tabular-nums shrink-0">
+            <div className="text-sm serif font-medium tabular-nums shrink-0">
               {formatDuration(s.countedSeconds)}
             </div>
             <button
               onClick={() => deleteSession(s.id)}
-              className="text-text-faint hover:text-danger p-1.5 rounded-lg hover:bg-danger/10 transition-colors shrink-0"
+              className="text-text-3 hover:text-p1 p-1.5 rounded-lg hover:bg-p1/10 transition-colors shrink-0"
             >
               <Trash2 size={15} />
             </button>

@@ -25,7 +25,7 @@ export function Modal({ open, onClose, title, children, hideCloseButton }: Modal
             onClick={hideCloseButton ? undefined : onClose}
           />
           <motion.div
-            className="relative w-full sm:max-w-md glass-panel rounded-t-3xl sm:rounded-3xl p-6 max-h-[90vh] overflow-y-auto"
+            className="relative w-full sm:max-w-md bg-surface border border-border shadow-pop rounded-t-md sm:rounded-md p-6 max-h-[90vh] overflow-y-auto"
             initial={{ y: 40, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 20, opacity: 0 }}
@@ -33,11 +33,11 @@ export function Modal({ open, onClose, title, children, hideCloseButton }: Modal
           >
             {(title || !hideCloseButton) && (
               <div className="flex items-center justify-between mb-4">
-                {title && <h2 className="text-lg font-semibold font-display">{title}</h2>}
+                {title && <h2 className="text-[19px] font-medium serif">{title}</h2>}
                 {!hideCloseButton && (
                   <button
                     onClick={onClose}
-                    className="ml-auto text-text-dim hover:text-text rounded-full p-1 hover:bg-surface-hover transition-colors"
+                    className="ml-auto text-text-2 hover:text-text rounded-full p-1 hover:bg-sunken transition-colors"
                   >
                     <X size={20} />
                   </button>

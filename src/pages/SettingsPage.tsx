@@ -1,25 +1,63 @@
 import { useMemo, useState } from 'react';
+import clsx from 'clsx';
 import { useTimerStore } from '@/store/timerStore';
 import { useActivityStore } from '@/store/activityStore';
 import { useNotificationStore } from '@/store/notificationStore';
+import { useThemeStore } from '@/store/themeStore';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { IconRenderer } from '@/components/ui/IconRenderer';
 import { isSupabaseConfigured } from '@/lib/supabase';
-import { Cloud, CloudOff, Bell, BellOff } from 'lucide-react';
+import { Cloud, CloudOff, Bell, BellOff, Settings as SettingsIcon, Sun, Moon } from 'lucide-react';
 
-function NumberField({ label, value, onChange, min = 1 }: { label: string; value: number; onChange: (v: number) => void; min?: number }) {
+function SectionHeading({ children }: { children: React.ReactNode }) {
+  return <h2 className="text-[13px] font-semibold uppercase tracking-wide text-text-3 mb-3">{children}</h2>;
+}
+
+function FieldRow({
+  label,
+  value,
+  onChange,
+  min = 1,
+}: {
+  label: string;
+  value: number;
+  onChange: (v: number) => void;
+  min?: number;
+}) {
   return (
-    <label className="flex items-center justify-between gap-3 py-2.5 border-b border-border last:border-0">
-      <span className="text-sm text-text-dim">{label}</span>
+    <label className="flex items-center justify-between gap-3 py-3 border-b border-border last:border-0">
+      <span className="text-[13.5px]">{label}</span>
       <input
         type="number"
         min={min}
         value={value}
         onChange={(e) => onChange(Math.max(min, Number(e.target.value) || min))}
-        className="w-20 bg-surface border border-border rounded-lg px-2 py-1.5 text-sm text-right outline-none focus:border-primary"
+        className="w-20 bg-surface border border-border rounded-sm px-2 py-1.5 text-sm text-right outline-none focus:border-accent"
       />
     </label>
+  );
+}
+
+function ToggleRow({ label, desc, on, onToggle }: { label: string; desc?: string; on: boolean; onToggle: () => void }) {
+  return (
+    <div className="flex items-center justify-between gap-3 py-3 border-b border-border last:border-0">
+      <div>
+        <div className="text-sm">{label}</div>
+        {desc && <div className="text-[12.5px] text-text-3 mt-0.5">{desc}</div>}
+      </div>
+      <button
+        onClick={onToggle}
+        className={clsx('w-10 h-6 rounded-full relative shrink-0 transition-colors', on ? 'bg-accent' : 'bg-border')}
+        role="switch"
+        aria-checked={on}
+      >
+        <span
+          className="absolute top-0.5 w-5 h-5 rounded-full bg-surface shadow-pop transition-transform"
+          style={{ transform: on ? 'translateX(18px)' : 'translateX(2px)' }}
+        />
+      </button>
+    </div>
   );
 }
 
@@ -32,6 +70,9 @@ export function SettingsPage() {
   const budgets = useActivityStore((s) => s.budgets);
   const setBudget = useActivityStore((s) => s.setBudget);
   const removeBudget = useActivityStore((s) => s.removeBudget);
+
+  const theme = useThemeStore((s) => s.theme);
+  const setTheme = useThemeStore((s) => s.setTheme);
 
   const eveningReminderEnabled = useNotificationStore((s) => s.eveningReminderEnabled);
   const eveningReminderTime = useNotificationStore((s) => s.eveningReminderTime);
@@ -50,14 +91,44 @@ export function SettingsPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="font-display text-xl font-semibold">Настройки</h1>
+      <h1 className="serif text-2xl font-medium flex items-center gap-2.5">
+        <SettingsIcon size={24} />
+        Настройки
+      </h1>
+
+      <Card>
+        <SectionHeading>Оформление</SectionHeading>
+        <div className="flex items-center justify-between gap-3 py-1">
+          <span className="text-[13.5px]">Тема</span>
+          <div className="flex gap-1.5">
+            <button
+              onClick={() => setTheme('light')}
+              className={clsx(
+                'flex items-center gap-1.5 px-3 py-1.5 rounded-btn text-[13px] border transition-colors',
+                theme === 'light' ? 'border-transparent bg-accent-tint text-accent font-semibold' : 'border-border text-text-2'
+              )}
+            >
+              <Sun size={13} /> Светлая
+            </button>
+            <button
+              onClick={() => setTheme('dark')}
+              className={clsx(
+                'flex items-center gap-1.5 px-3 py-1.5 rounded-btn text-[13px] border transition-colors',
+                theme === 'dark' ? 'border-transparent bg-accent-tint text-accent font-semibold' : 'border-border text-text-2'
+              )}
+            >
+              <Moon size={13} /> Тёмная
+            </button>
+          </div>
+        </div>
+      </Card>
 
       <Card>
         <div className="flex items-center gap-2 mb-1">
-          {isSupabaseConfigured ? <Cloud size={16} className="text-success" /> : <CloudOff size={16} className="text-warning" />}
-          <h2 className="font-display font-semibold">Синхронизация</h2>
+          {isSupabaseConfigured ? <Cloud size={16} className="text-success" /> : <CloudOff size={16} className="text-p2" />}
+          <SectionHeading>Синхронизация</SectionHeading>
         </div>
-        <p className="text-sm text-text-dim">
+        <p className="text-sm text-text-2">
           {isSupabaseConfigured
             ? 'Подключено к Supabase — данные синхронизируются в облаке.'
             : 'Пока работаем локально в этом браузере. Чтобы включить облачную синхронизацию между устройствами, подключим Supabase.'}
@@ -65,12 +136,19 @@ export function SettingsPage() {
       </Card>
 
       <Card>
-        <h2 className="font-display font-semibold mb-1">Помодоро</h2>
-        <p className="text-sm text-text-dim mb-2">Длительность фаз в минутах.</p>
-        <NumberField label="Работа" value={settings.pomodoroWorkMin} onChange={(v) => updateSettings({ pomodoroWorkMin: v })} />
-        <NumberField label="Короткий перерыв" value={settings.pomodoroBreakMin} onChange={(v) => updateSettings({ pomodoroBreakMin: v })} />
-        <NumberField label="Длинный перерыв" value={settings.pomodoroLongBreakMin} onChange={(v) => updateSettings({ pomodoroLongBreakMin: v })} />
-        <NumberField
+        <SectionHeading>Помодоро</SectionHeading>
+        <FieldRow label="Работа, мин" value={settings.pomodoroWorkMin} onChange={(v) => updateSettings({ pomodoroWorkMin: v })} />
+        <FieldRow
+          label="Короткий перерыв, мин"
+          value={settings.pomodoroBreakMin}
+          onChange={(v) => updateSettings({ pomodoroBreakMin: v })}
+        />
+        <FieldRow
+          label="Длинный перерыв, мин"
+          value={settings.pomodoroLongBreakMin}
+          onChange={(v) => updateSettings({ pomodoroLongBreakMin: v })}
+        />
+        <FieldRow
           label="Циклов до длинного перерыва"
           value={settings.pomodoroCyclesBeforeLongBreak}
           onChange={(v) => updateSettings({ pomodoroCyclesBeforeLongBreak: v })}
@@ -78,15 +156,14 @@ export function SettingsPage() {
       </Card>
 
       <Card>
-        <h2 className="font-display font-semibold mb-1">Забытый таймер</h2>
-        <p className="text-sm text-text-dim mb-2">Когда напомнить и когда остановить автоматически.</p>
-        <NumberField
-          label="Напомнить через (мин)"
+        <SectionHeading>Забытый таймер</SectionHeading>
+        <FieldRow
+          label="Напомнить через, мин"
           value={settings.reminderAfterMin}
           onChange={(v) => updateSettings({ reminderAfterMin: v })}
         />
-        <NumberField
-          label="Авто-стоп после (мин)"
+        <FieldRow
+          label="Авто-стоп через, мин"
           value={settings.autoStopAfterMin}
           onChange={(v) => updateSettings({ autoStopAfterMin: v })}
         />
@@ -94,64 +171,62 @@ export function SettingsPage() {
 
       <Card>
         <div className="flex items-center gap-2 mb-1">
-          {permission === 'granted' ? <Bell size={16} className="text-success" /> : <BellOff size={16} className="text-text-faint" />}
-          <h2 className="font-display font-semibold">Уведомления</h2>
+          {permission === 'granted' ? <Bell size={16} className="text-success" /> : <BellOff size={16} className="text-text-3" />}
+          <SectionHeading>Уведомления</SectionHeading>
         </div>
-        <p className="text-sm text-text-dim mb-3">
-          Работают, пока приложение открыто в браузере/на телефоне (вкладка или установленное PWA) — без
-          сервера полноценный пуш в закрытое приложение не сделать.
-        </p>
 
-        {permission !== 'granted' && permission !== 'unsupported' && (
-          <Button variant="primary" size="sm" onClick={requestPermission} className="mb-3">
-            Разрешить уведомления
-          </Button>
-        )}
-        {permission === 'unsupported' && (
-          <p className="text-xs text-warning mb-3">Браузер не поддерживает уведомления.</p>
-        )}
+        <div className="flex items-center justify-between gap-3 py-3 border-b border-border">
+          <div>
+            <div className="text-sm">Разрешение на уведомления</div>
+            <div className="text-[12.5px] text-text-3 mt-0.5">
+              Статус: {permission === 'granted' ? 'разрешено' : permission === 'unsupported' ? 'не поддерживается' : 'не запрошено'}
+            </div>
+          </div>
+          {permission === 'granted' ? (
+            <span className="text-[13px] text-success font-medium shrink-0">Разрешено</span>
+          ) : permission !== 'unsupported' ? (
+            <Button variant="primary" size="sm" onClick={requestPermission} className="shrink-0">
+              Запросить
+            </Button>
+          ) : null}
+        </div>
 
-        <label className="flex items-center justify-between gap-3 py-2.5 border-t border-border">
-          <span className="text-sm text-text-dim">Напоминать вечером о привычках</span>
-          <button
-            onClick={() => setEveningReminderEnabled(!eveningReminderEnabled)}
-            className="w-11 h-6 rounded-full relative transition-colors shrink-0"
-            style={{ background: eveningReminderEnabled ? 'var(--color-primary)' : 'var(--color-border)' }}
-          >
-            <span
-              className="absolute top-0.5 w-5 h-5 rounded-full bg-white transition-transform"
-              style={{ transform: eveningReminderEnabled ? 'translateX(22px)' : 'translateX(2px)' }}
-            />
-          </button>
-        </label>
+        <ToggleRow
+          label="Вечернее напоминание о привычках"
+          desc="Пришлём уведомление, если что-то осталось невыполненным"
+          on={eveningReminderEnabled}
+          onToggle={() => setEveningReminderEnabled(!eveningReminderEnabled)}
+        />
         {eveningReminderEnabled && (
-          <label className="flex items-center justify-between gap-3 py-2.5 border-t border-border">
-            <span className="text-sm text-text-dim">Время</span>
+          <div className="flex items-center justify-between gap-3 py-3">
+            <span className="text-[13.5px]">Время напоминания</span>
             <input
               type="time"
               value={eveningReminderTime}
               onChange={(e) => setEveningReminderTime(e.target.value)}
-              className="bg-surface border border-border rounded-lg px-2 py-1.5 text-sm outline-none focus:border-primary"
+              className="bg-surface border border-border rounded-sm px-2 py-1.5 text-sm outline-none focus:border-accent"
             />
-          </label>
+          </div>
         )}
+        <p className="text-[12px] text-text-3 pt-1">
+          Работают, пока приложение открыто в браузере или на телефоне — без сервера полноценный пуш в закрытое
+          приложение не сделать.
+        </p>
       </Card>
 
       <Card>
-        <h2 className="font-display font-semibold mb-1">Активности и цели</h2>
-        <p className="text-sm text-text-dim mb-2">Часов в неделю — необязательно, для прогресса в дашборде.</p>
-        <div className="flex flex-col gap-1.5">
+        <SectionHeading>Активности и цели</SectionHeading>
+        <p className="text-[12.5px] text-text-3 mb-2">Часов в неделю — необязательно, для прогресса в дашборде.</p>
+        <div className="flex flex-col">
           {activities.map((a) => {
             const budget = budgets.find((b) => b.activityId === a.id);
             return (
-              <div key={a.id} className="flex items-center gap-3 py-1.5 border-b border-border last:border-0">
-                <div
-                  className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
-                  style={{ background: `${a.color}22`, color: a.color }}
-                >
-                  <IconRenderer name={a.icon} size={15} />
-                </div>
-                <span className="text-sm flex-1 truncate">{a.name}</span>
+              <div key={a.id} className="flex items-center gap-3 py-2.5 border-b border-border last:border-0">
+                <span className="w-2 h-2 rounded-full shrink-0" style={{ background: a.color }} />
+                <span className="text-[13.5px] flex-1 truncate flex items-center gap-2">
+                  <IconRenderer name={a.icon} size={14} className="text-text-3" />
+                  {a.name}
+                </span>
                 <input
                   type="number"
                   min={0}
@@ -163,13 +238,10 @@ export function SettingsPage() {
                     if (!e.target.value || v <= 0) removeBudget(a.id);
                     else setBudget(a.id, v);
                   }}
-                  className="w-16 bg-surface border border-border rounded-lg px-2 py-1.5 text-sm text-right outline-none focus:border-primary"
+                  className="w-16 bg-surface border border-border rounded-sm px-2 py-1.5 text-sm text-right outline-none focus:border-accent"
                 />
-                <span className="text-xs text-text-faint w-6">ч/н</span>
-                <button
-                  onClick={() => archiveActivity(a.id)}
-                  className="text-xs text-text-faint hover:text-danger shrink-0"
-                >
+                <span className="text-xs text-text-3 w-8">ч/нед</span>
+                <button onClick={() => archiveActivity(a.id)} className="text-xs text-text-3 hover:text-p1 shrink-0">
                   Архив
                 </button>
               </div>

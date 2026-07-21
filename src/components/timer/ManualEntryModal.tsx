@@ -44,7 +44,7 @@ export function ManualEntryModal({ open, onClose }: { open: boolean; onClose: ()
     <Modal open={open} onClose={onClose} title="Запись задним числом">
       <div className="flex flex-col gap-4">
         <div>
-          <label className="text-xs text-text-dim mb-1.5 block">Активность</label>
+          <label className="text-xs text-text-2 mb-1.5 block">Активность</label>
           <div className="flex flex-wrap gap-2">
             {activities.map((a) => (
               <button
@@ -52,7 +52,7 @@ export function ManualEntryModal({ open, onClose }: { open: boolean; onClose: ()
                 onClick={() => setActivityId(a.id)}
                 className={clsx(
                   'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors',
-                  activityId === a.id ? 'border-transparent text-white' : 'border-border text-text-dim hover:text-text'
+                  activityId === a.id ? 'border-transparent text-white' : 'border-border text-text-2 hover:text-text'
                 )}
                 style={activityId === a.id ? { background: a.color } : undefined}
               >
@@ -65,35 +65,35 @@ export function ManualEntryModal({ open, onClose }: { open: boolean; onClose: ()
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="text-xs text-text-dim mb-1.5 block">Начало</label>
+            <label className="text-xs text-text-2 mb-1.5 block">Начало</label>
             <input
               type="datetime-local"
               value={start}
               max={end}
               onChange={(e) => setStart(e.target.value)}
-              className="w-full bg-surface border border-border rounded-xl px-2.5 py-2 text-sm outline-none focus:border-primary"
+              className="w-full bg-surface border border-border rounded-xl px-2.5 py-2 text-sm outline-none focus:border-accent"
             />
           </div>
           <div>
-            <label className="text-xs text-text-dim mb-1.5 block">Конец</label>
+            <label className="text-xs text-text-2 mb-1.5 block">Конец</label>
             <input
               type="datetime-local"
               value={end}
               min={start}
               max={toLocalInputValue(now)}
               onChange={(e) => setEnd(e.target.value)}
-              className="w-full bg-surface border border-border rounded-xl px-2.5 py-2 text-sm outline-none focus:border-primary"
+              className="w-full bg-surface border border-border rounded-xl px-2.5 py-2 text-sm outline-none focus:border-accent"
             />
           </div>
         </div>
 
         <div>
-          <label className="text-xs text-text-dim mb-1.5 block">Заметка (необязательно)</label>
+          <label className="text-xs text-text-2 mb-1.5 block">Заметка (необязательно)</label>
           <input
             value={note}
             onChange={(e) => setNote(e.target.value)}
             placeholder="Что делал?"
-            className="w-full bg-surface border border-border rounded-xl px-3 py-2.5 text-sm outline-none focus:border-primary"
+            className="w-full bg-surface border border-border rounded-xl px-3 py-2.5 text-sm outline-none focus:border-accent"
           />
         </div>
 
