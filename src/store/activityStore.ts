@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { Activity, StatKey } from '@/types';
+import type { Activity, StatKey, TimeBudget } from '@/types';
 import { makeId } from '@/lib/id';
 
 export const ACTIVITY_COLORS = [
@@ -16,15 +16,19 @@ const DEFAULT_ACTIVITIES: Activity[] = [
 
 interface ActivityState {
   activities: Activity[];
+  budgets: TimeBudget[];
   addActivity: (input: { name: string; color: string; icon: string; statKey: StatKey }) => Activity;
   updateActivity: (id: string, patch: Partial<Omit<Activity, 'id'>>) => void;
   archiveActivity: (id: string) => void;
+  setBudget: (activityId: string, targetHoursPerWeek: number) => void;
+  removeBudget: (activityId: string) => void;
 }
 
 export const useActivityStore = create<ActivityState>()(
   persist(
     (set) => ({
       activities: DEFAULT_ACTIVITIES,
+      budgets: [],
 
       addActivity: (input) => {
         const activity: Activity = {
@@ -48,7 +52,21 @@ export const useActivityStore = create<ActivityState>()(
         }));
       },
 
-      // exposed for callers that need a snapshot without subscribing
+      setBudget: (activityId, targetHoursPerWeek) => {
+        set((state) => {
+          const existing = state.budgets.find((b) => b.activityId === activityId);
+          if (existing) {
+            return {
+              budgets: state.budgets.map((b) => (b.activityId === activityId ? { ...b, targetHoursPerWeek } : b)),
+            };
+          }
+          return { budgets: [...state.budgets, { id: makeId(), activityId, targetHoursPerWeek }] };
+        });
+      },
+
+      removeBudget: (activityId) => {
+        set((state) => ({ budgets: state.budgets.filter((b) => b.activityId !== activityId) }));
+      },
     }),
     { name: 'lifequest-activities' }
   )

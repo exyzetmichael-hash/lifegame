@@ -27,6 +27,9 @@ export function SettingsPage() {
   const allActivities = useActivityStore((s) => s.activities);
   const activities = useMemo(() => allActivities.filter((a) => !a.archived), [allActivities]);
   const archiveActivity = useActivityStore((s) => s.archiveActivity);
+  const budgets = useActivityStore((s) => s.budgets);
+  const setBudget = useActivityStore((s) => s.setBudget);
+  const removeBudget = useActivityStore((s) => s.removeBudget);
 
   return (
     <div className="flex flex-col gap-6">
@@ -73,25 +76,43 @@ export function SettingsPage() {
       </Card>
 
       <Card>
-        <h2 className="font-display font-semibold mb-3">Активности</h2>
+        <h2 className="font-display font-semibold mb-1">Активности и цели</h2>
+        <p className="text-sm text-text-dim mb-2">Часов в неделю — необязательно, для прогресса в дашборде.</p>
         <div className="flex flex-col gap-1.5">
-          {activities.map((a) => (
-            <div key={a.id} className="flex items-center gap-3 py-1.5">
-              <div
-                className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
-                style={{ background: `${a.color}22`, color: a.color }}
-              >
-                <IconRenderer name={a.icon} size={15} />
+          {activities.map((a) => {
+            const budget = budgets.find((b) => b.activityId === a.id);
+            return (
+              <div key={a.id} className="flex items-center gap-3 py-1.5 border-b border-border last:border-0">
+                <div
+                  className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+                  style={{ background: `${a.color}22`, color: a.color }}
+                >
+                  <IconRenderer name={a.icon} size={15} />
+                </div>
+                <span className="text-sm flex-1 truncate">{a.name}</span>
+                <input
+                  type="number"
+                  min={0}
+                  step={0.5}
+                  placeholder="—"
+                  value={budget?.targetHoursPerWeek ?? ''}
+                  onChange={(e) => {
+                    const v = Number(e.target.value);
+                    if (!e.target.value || v <= 0) removeBudget(a.id);
+                    else setBudget(a.id, v);
+                  }}
+                  className="w-16 bg-surface border border-border rounded-lg px-2 py-1.5 text-sm text-right outline-none focus:border-primary"
+                />
+                <span className="text-xs text-text-faint w-6">ч/н</span>
+                <button
+                  onClick={() => archiveActivity(a.id)}
+                  className="text-xs text-text-faint hover:text-danger shrink-0"
+                >
+                  Архив
+                </button>
               </div>
-              <span className="text-sm flex-1">{a.name}</span>
-              <button
-                onClick={() => archiveActivity(a.id)}
-                className="text-xs text-text-faint hover:text-danger"
-              >
-                Архивировать
-              </button>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </Card>
     </div>

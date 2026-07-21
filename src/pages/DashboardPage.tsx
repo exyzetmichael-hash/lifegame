@@ -4,7 +4,14 @@ import clsx from 'clsx';
 import { useTimerStore } from '@/store/timerStore';
 import { useActivityStore } from '@/store/activityStore';
 import { useGamificationStore, overallLevel } from '@/store/gamificationStore';
-import { periodRange, sessionsInRange, totalsByActivity, dailySeriesSeconds, type Period } from '@/lib/dashboardStats';
+import {
+  periodRange,
+  sessionsInRange,
+  totalsByActivity,
+  dailySeriesSeconds,
+  totalsByWeekday,
+  type Period,
+} from '@/lib/dashboardStats';
 import { formatHoursMinutes } from '@/lib/format';
 import { Card } from '@/components/ui/Card';
 import { IconRenderer } from '@/components/ui/IconRenderer';
@@ -16,10 +23,13 @@ const PERIODS: { key: Period; label: string }[] = [
   { key: 'month', label: 'Месяц' },
 ];
 
+const WEEKDAY_LABELS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+
 export function DashboardPage() {
   const [period, setPeriod] = useState<Period>('day');
   const sessions = useTimerStore((s) => s.sessions);
   const activities = useActivityStore((s) => s.activities);
+  const budgets = useActivityStore((s) => s.budgets);
   const totalXp = useGamificationStore((s) => s.totalXp);
   const stats = useGamificationStore((s) => s.stats);
   const statDefs = useGamificationStore((s) => s.statDefs);
@@ -33,6 +43,16 @@ export function DashboardPage() {
   const totalSeconds = inRange.reduce((sum, s) => sum + s.countedSeconds, 0);
   const sortedActivities = [...byActivity.entries()].sort((a, b) => b[1] - a[1]);
   const maxActivitySeconds = sortedActivities[0]?.[1] ?? 1;
+
+  const weekdayTotals = useMemo(() => totalsByWeekday(sessions), [sessions]);
+  const maxWeekdaySeconds = Math.max(1, ...weekdayTotals);
+
+  const { start: weekStart, end: weekEnd } = periodRange('week');
+  const thisWeekSessions = useMemo(
+    () => sessionsInRange(sessions, weekStart, weekEnd),
+    [sessions, weekStart.getTime(), weekEnd.getTime()]
+  );
+  const thisWeekByActivity = useMemo(() => totalsByActivity(thisWeekSessions), [thisWeekSessions]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -101,6 +121,58 @@ export function DashboardPage() {
           </ResponsiveContainer>
         </div>
       </Card>
+
+      <Card>
+        <h2 className="font-display font-semibold mb-1">Когда я продуктивнее</h2>
+        <p className="text-xs text-text-dim mb-4">По дням недели, за всё время</p>
+        <div className="flex items-end gap-2 h-28">
+          {weekdayTotals.map((seconds, idx) => (
+            <div key={idx} className="flex-1 flex flex-col items-center gap-1.5 h-full justify-end">
+              <div
+                className="w-full rounded-md transition-all"
+                style={{
+                  height: `${Math.max(4, (seconds / maxWeekdaySeconds) * 100)}%`,
+                  background: seconds > 0 ? 'var(--color-accent)' : 'var(--color-border)',
+                }}
+              />
+              <span className="text-[11px] text-text-faint">{WEEKDAY_LABELS[idx]}</span>
+            </div>
+          ))}
+        </div>
+      </Card>
+
+      {budgets.length > 0 && (
+        <Card>
+          <h2 className="font-display font-semibold mb-1">Цели по времени</h2>
+          <p className="text-xs text-text-dim mb-4">На этой неделе</p>
+          <div className="flex flex-col gap-3">
+            {budgets.map((b) => {
+              const activity = activities.find((a) => a.id === b.activityId);
+              if (!activity) return null;
+              const doneSeconds = thisWeekByActivity.get(b.activityId) ?? 0;
+              const targetSeconds = b.targetHoursPerWeek * 3600;
+              const pct = targetSeconds > 0 ? doneSeconds / targetSeconds : 0;
+              return (
+                <div key={b.id}>
+                  <div className="flex justify-between text-sm mb-1">
+                    <span className="flex items-center gap-1.5">
+                      <IconRenderer name={activity.icon} size={14} style={{ color: activity.color }} />
+                      {activity.name}
+                    </span>
+                    <span className="text-text-dim">
+                      {formatHoursMinutes(doneSeconds)} / {b.targetHoursPerWeek} ч
+                    </span>
+                  </div>
+                  <ProgressBar
+                    value={pct}
+                    color={pct >= 1 ? 'var(--color-success)' : activity.color}
+                  />
+                </div>
+              );
+            })}
+          </div>
+        </Card>
+      )}
 
       <Card>
         <h2 className="font-display font-semibold mb-4">По категориям</h2>
