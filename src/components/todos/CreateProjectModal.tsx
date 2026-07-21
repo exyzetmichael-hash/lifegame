@@ -21,24 +21,24 @@ export function CreateProjectModal({ open, onClose }: { open: boolean; onClose: 
     <Modal open={open} onClose={onClose} title="Новый проект">
       <div className="flex flex-col gap-4">
         <div>
-          <label className="text-xs text-text-dim mb-1.5 block">Название</label>
+          <label className="text-xs text-text-3 mb-1.5 block">Название</label>
           <input
             autoFocus
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Например, Ремонт"
-            className="w-full bg-surface border border-border rounded-xl px-3 py-2.5 text-sm outline-none focus:border-primary"
+            className="w-full bg-surface border border-border rounded-sm px-3 py-2.5 text-sm outline-none focus:border-accent"
             onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
           />
         </div>
         <div>
-          <label className="text-xs text-text-dim mb-1.5 block">Цвет</label>
+          <label className="text-xs text-text-3 mb-1.5 block">Цвет</label>
           <div className="flex flex-wrap gap-2">
             {ACTIVITY_COLORS.map((c) => (
               <button
                 key={c}
                 onClick={() => setColor(c)}
-                className={clsx('w-8 h-8 rounded-full', color === c && 'ring-2 ring-offset-2 ring-offset-bg-elevated ring-white')}
+                className={clsx('w-[26px] h-[26px] rounded-full border-2', color === c ? 'border-text' : 'border-transparent')}
                 style={{ background: c }}
               />
             ))}

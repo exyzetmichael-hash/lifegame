@@ -32,7 +32,7 @@ export function HabitRow({ habit }: { habit: Habit }) {
       </div>
       <div className="min-w-0 flex-1">
         <div className="text-sm font-medium truncate">{habit.name}</div>
-        <div className="text-xs text-text-faint flex items-center gap-1">
+        <div className="text-xs text-text-3 flex items-center gap-1">
           {habit.kind === 'numeric' ? (
             <span>
               {value}/{target} {habit.unit}
@@ -41,7 +41,7 @@ export function HabitRow({ habit }: { habit: Habit }) {
             <span>{completed ? 'Готово' : 'Не отмечено'}</span>
           )}
           {streak > 0 && (
-            <span className="flex items-center gap-0.5 text-warning ml-1">
+            <span className="flex items-center gap-0.5 text-p2 ml-1">
               <Flame size={11} /> {streak}
             </span>
           )}
@@ -56,7 +56,7 @@ export function HabitRow({ habit }: { habit: Habit }) {
           transition={{ duration: 0.28 }}
           className={clsx(
             'w-9 h-9 rounded-full flex items-center justify-center border-2 transition-colors shrink-0',
-            completed ? 'border-transparent text-white' : 'border-border text-transparent hover:border-text-faint'
+            completed ? 'border-transparent text-white' : 'border-border text-transparent hover:border-text-3'
           )}
           style={completed ? { background: habit.color } : undefined}
         >
@@ -66,7 +66,7 @@ export function HabitRow({ habit }: { habit: Habit }) {
         <div className="flex items-center gap-1.5 shrink-0">
           <button
             onClick={() => setNumericValue(habit.id, today, Math.max(0, value - 1))}
-            className="w-7 h-7 rounded-lg border border-border text-text-dim hover:text-text flex items-center justify-center"
+            className="w-7 h-7 rounded-lg border border-border text-text-2 hover:text-text flex items-center justify-center"
           >
             <Minus size={14} />
           </button>
@@ -75,7 +75,7 @@ export function HabitRow({ habit }: { habit: Habit }) {
             onClick={() => setNumericValue(habit.id, today, value + 1)}
             className={clsx(
               'w-7 h-7 rounded-lg border flex items-center justify-center',
-              completed ? 'border-transparent text-white' : 'border-border text-text-dim hover:text-text'
+              completed ? 'border-transparent text-white' : 'border-border text-text-2 hover:text-text'
             )}
             style={completed ? { background: habit.color } : undefined}
           >

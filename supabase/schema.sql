@@ -102,6 +102,7 @@ create table if not exists todos (
   project_id text references projects(id) on delete set null,
   priority text not null check (priority in ('p1','p2','p3','p4')),
   due_date date,
+  labels jsonb not null default '[]'::jsonb,
   completed boolean not null default false,
   completed_at timestamptz,
   created_at timestamptz not null default now()

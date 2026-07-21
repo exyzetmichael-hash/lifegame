@@ -1,29 +1,75 @@
 @import "tailwindcss";
 
 @theme {
-  /* Base surfaces */
-  --color-bg: #0b0e1a;
-  --color-bg-elevated: #12162a;
-  --color-surface: #161b32;
-  --color-surface-hover: #1c2140;
-  --color-border: #262c4d;
+  /* Base surfaces (light default) */
+  --color-canvas: #fbfaf8;
+  --color-surface: #ffffff;
+  --color-sunken: #f4f2ee;
+  --color-border: #ebe8e2;
 
   /* Text */
-  --color-text: #e8eaf6;
-  --color-text-dim: #9098c2;
-  --color-text-faint: #5c628a;
+  --color-text: #201e1b;
+  --color-text-2: #6e6a63;
+  --color-text-3: #9a968d;
 
   /* Brand / accents */
-  --color-primary: #7c3aed;
-  --color-primary-hover: #8b5cf6;
-  --color-accent: #22d3ee;
-  --color-xp: #f5b642;
-  --color-success: #34d399;
-  --color-danger: #f5556b;
-  --color-warning: #fbbf24;
+  --color-accent: #db5a45;
+  --color-accent-hover: #c64c39;
+  --color-accent-tint: #fbede9;
+  --color-success: #3f7d5b;
+  --color-p1: #d64545;
+  --color-p2: #e0912f;
+  --color-p3: #3e7bc4;
+  --color-p4: #9a968d;
 
-  --font-display: "Space Grotesk", "Inter", system-ui, sans-serif;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-btn: 8px;
+
+  --font-serif: "Fraunces", serif;
   --font-sans: "Inter", system-ui, sans-serif;
+}
+
+:root[data-theme="dark"] {
+  --color-canvas: #131211;
+  --color-surface: #1c1a18;
+  --color-sunken: #0e0d0c;
+  --color-border: #2a2724;
+
+  --color-text: #edeae3;
+  --color-text-2: #a29d93;
+  --color-text-3: #79746b;
+
+  --color-accent: #ea6a52;
+  --color-accent-hover: #f17b65;
+  --color-accent-tint: rgba(234, 106, 82, 0.14);
+  --color-success: #4c9670;
+  --color-p1: #e15b5b;
+  --color-p2: #e39f4c;
+  --color-p3: #5c93d6;
+  --color-p4: #79746b;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --color-canvas: #131211;
+    --color-surface: #1c1a18;
+    --color-sunken: #0e0d0c;
+    --color-border: #2a2724;
+
+    --color-text: #edeae3;
+    --color-text-2: #a29d93;
+    --color-text-3: #79746b;
+
+    --color-accent: #ea6a52;
+    --color-accent-hover: #f17b65;
+    --color-accent-tint: rgba(234, 106, 82, 0.14);
+    --color-success: #4c9670;
+    --color-p1: #e15b5b;
+    --color-p2: #e39f4c;
+    --color-p3: #5c93d6;
+    --color-p4: #79746b;
+  }
 }
 
 html, body, #root {
@@ -32,18 +78,25 @@ html, body, #root {
 
 body {
   margin: 0;
-  background:
-    radial-gradient(1200px 600px at 15% -10%, rgba(124, 58, 237, 0.16), transparent 60%),
-    radial-gradient(900px 500px at 100% 0%, rgba(34, 211, 238, 0.10), transparent 55%),
-    var(--color-bg);
+  background: var(--color-sunken);
   color: var(--color-text);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
 }
 
+.serif {
+  font-family: var(--font-serif);
+}
+
 ::selection {
-  background: rgba(124, 58, 237, 0.35);
+  background: var(--color-accent-tint);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: 4px;
 }
 
 * {
@@ -59,34 +112,27 @@ body {
   border-radius: 8px;
 }
 
+:root {
+  --shadow-pop: 0 8px 24px -8px rgba(0, 0, 0, 0.18);
+}
+:root[data-theme="dark"] {
+  --shadow-pop: 0 8px 28px -8px rgba(0, 0, 0, 0.55);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --shadow-pop: 0 8px 28px -8px rgba(0, 0, 0, 0.55);
+  }
+}
+
 @layer components {
-  .glass-panel {
-    background: linear-gradient(180deg, rgba(22, 27, 50, 0.9), rgba(18, 22, 42, 0.85));
-    border: 1px solid var(--color-border);
-    backdrop-filter: blur(16px);
-  }
-
-  .glow-primary {
-    box-shadow: 0 0 0 1px rgba(124, 58, 237, 0.25), 0 8px 30px -8px rgba(124, 58, 237, 0.45);
-  }
-
-  .glow-accent {
-    box-shadow: 0 0 0 1px rgba(34, 211, 238, 0.25), 0 8px 30px -8px rgba(34, 211, 238, 0.45);
-  }
-
-  .text-gradient {
-    background: linear-gradient(90deg, var(--color-accent), var(--color-primary));
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+  .shadow-pop {
+    box-shadow: var(--shadow-pop);
   }
 }
 
-@keyframes pulse-ring {
-  0% { box-shadow: 0 0 0 0 rgba(124, 58, 237, 0.5); }
-  70% { box-shadow: 0 0 0 14px rgba(124, 58, 237, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(124, 58, 237, 0); }
-}
-.animate-pulse-ring {
-  animation: pulse-ring 2.2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
 }

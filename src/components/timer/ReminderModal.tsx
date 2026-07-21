@@ -15,18 +15,18 @@ export function ReminderModal() {
   return (
     <Modal open={open} onClose={dismissReminder} hideCloseButton>
       <div className="flex flex-col items-center text-center gap-4 py-2">
-        <div className="w-14 h-14 rounded-full bg-warning/15 flex items-center justify-center text-warning animate-pulse-ring">
+        <div className="w-14 h-14 rounded-full bg-p2/15 flex items-center justify-center text-p2 animate-pulse-ring">
           <BellRing size={28} />
         </div>
         <div>
-          <h2 className="text-lg font-semibold font-display">Всё ещё здесь?</h2>
-          <p className="text-text-dim text-sm mt-1">
+          <h2 className="text-lg font-semibold serif">Всё ещё здесь?</h2>
+          <p className="text-text-2 text-sm mt-1">
             Таймер «{activity?.name ?? 'активность'}» идёт уже давно. Если ты отвлёкся, лучше остановить —
             иначе он остановится сам.
           </p>
         </div>
         <div className="flex gap-3 w-full mt-2">
-          <Button variant="danger" className="flex-1" onClick={() => stop()}>
+          <Button variant="ghost" className="flex-1" onClick={() => stop()}>
             Стоп
           </Button>
           <Button variant="primary" className="flex-1" onClick={dismissReminder}>

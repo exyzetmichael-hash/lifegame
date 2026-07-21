@@ -65,32 +65,32 @@ export function CreateHabitModal({ open, onClose }: { open: boolean; onClose: ()
     <Modal open={open} onClose={() => { reset(); onClose(); }} title="Новая привычка">
       <div className="flex flex-col gap-4">
         <div>
-          <label className="text-xs text-text-dim mb-1.5 block">Название</label>
+          <label className="text-xs text-text-2 mb-1.5 block">Название</label>
           <input
             autoFocus
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Например, Пить воду"
-            className="w-full bg-surface border border-border rounded-xl px-3 py-2.5 text-sm outline-none focus:border-primary"
+            className="w-full bg-surface border border-border rounded-xl px-3 py-2.5 text-sm outline-none focus:border-accent"
           />
         </div>
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="text-xs text-text-dim mb-1.5 block">Цвет</label>
+            <label className="text-xs text-text-2 mb-1.5 block">Цвет</label>
             <div className="flex flex-wrap gap-2">
               {ACTIVITY_COLORS.slice(0, 6).map((c) => (
                 <button
                   key={c}
                   onClick={() => setColor(c)}
-                  className={clsx('w-7 h-7 rounded-full', color === c && 'ring-2 ring-offset-2 ring-offset-bg-elevated ring-white')}
+                  className={clsx('w-7 h-7 rounded-full border-2', color === c ? 'border-text' : 'border-transparent')}
                   style={{ background: c }}
                 />
               ))}
             </div>
           </div>
           <div>
-            <label className="text-xs text-text-dim mb-1.5 block">Иконка</label>
+            <label className="text-xs text-text-2 mb-1.5 block">Иконка</label>
             <div className="flex flex-wrap gap-2">
               {ACTIVITY_ICON_CHOICES.slice(0, 6).map((ic) => (
                 <button
@@ -98,7 +98,7 @@ export function CreateHabitModal({ open, onClose }: { open: boolean; onClose: ()
                   onClick={() => setIcon(ic)}
                   className={clsx(
                     'w-7 h-7 rounded-lg flex items-center justify-center border',
-                    icon === ic ? 'border-primary bg-primary/15 text-primary' : 'border-border text-text-dim'
+                    icon === ic ? 'border-accent bg-accent/15 text-accent' : 'border-border text-text-2'
                   )}
                 >
                   <IconRenderer name={ic} size={14} />
@@ -109,13 +109,13 @@ export function CreateHabitModal({ open, onClose }: { open: boolean; onClose: ()
         </div>
 
         <div>
-          <label className="text-xs text-text-dim mb-1.5 block">Тип</label>
+          <label className="text-xs text-text-2 mb-1.5 block">Тип</label>
           <div className="flex gap-2">
             <button
               onClick={() => setKind('binary')}
               className={clsx(
                 'flex-1 px-3 py-2 rounded-xl text-sm font-medium border transition-colors',
-                kind === 'binary' ? 'border-primary bg-primary/10 text-text' : 'border-border text-text-dim'
+                kind === 'binary' ? 'border-accent bg-accent/10 text-text' : 'border-border text-text-2'
               )}
             >
               Да/Нет
@@ -124,7 +124,7 @@ export function CreateHabitModal({ open, onClose }: { open: boolean; onClose: ()
               onClick={() => setKind('numeric')}
               className={clsx(
                 'flex-1 px-3 py-2 rounded-xl text-sm font-medium border transition-colors',
-                kind === 'numeric' ? 'border-primary bg-primary/10 text-text' : 'border-border text-text-dim'
+                kind === 'numeric' ? 'border-accent bg-accent/10 text-text' : 'border-border text-text-2'
               )}
             >
               Число
@@ -135,29 +135,29 @@ export function CreateHabitModal({ open, onClose }: { open: boolean; onClose: ()
         {kind === 'numeric' && (
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs text-text-dim mb-1.5 block">Цель за день</label>
+              <label className="text-xs text-text-2 mb-1.5 block">Цель за день</label>
               <input
                 type="number"
                 min={1}
                 value={targetValue}
                 onChange={(e) => setTargetValue(Math.max(1, Number(e.target.value) || 1))}
-                className="w-full bg-surface border border-border rounded-xl px-3 py-2.5 text-sm outline-none focus:border-primary"
+                className="w-full bg-surface border border-border rounded-xl px-3 py-2.5 text-sm outline-none focus:border-accent"
               />
             </div>
             <div>
-              <label className="text-xs text-text-dim mb-1.5 block">Единица</label>
+              <label className="text-xs text-text-2 mb-1.5 block">Единица</label>
               <input
                 value={unit}
                 onChange={(e) => setUnit(e.target.value)}
                 placeholder="стаканов"
-                className="w-full bg-surface border border-border rounded-xl px-3 py-2.5 text-sm outline-none focus:border-primary"
+                className="w-full bg-surface border border-border rounded-xl px-3 py-2.5 text-sm outline-none focus:border-accent"
               />
             </div>
           </div>
         )}
 
         <div>
-          <label className="text-xs text-text-dim mb-1.5 block">Расписание</label>
+          <label className="text-xs text-text-2 mb-1.5 block">Расписание</label>
           <div className="flex gap-2 mb-2">
             {(['daily', 'weekdays', 'weekly_count'] as const).map((t) => (
               <button
@@ -165,7 +165,7 @@ export function CreateHabitModal({ open, onClose }: { open: boolean; onClose: ()
                 onClick={() => setScheduleType(t)}
                 className={clsx(
                   'flex-1 px-2 py-2 rounded-xl text-xs font-medium border transition-colors',
-                  scheduleType === t ? 'border-primary bg-primary/10 text-text' : 'border-border text-text-dim'
+                  scheduleType === t ? 'border-accent bg-accent/10 text-text' : 'border-border text-text-2'
                 )}
               >
                 {t === 'daily' ? 'Каждый день' : t === 'weekdays' ? 'По дням' : 'X раз/неделю'}
@@ -180,7 +180,7 @@ export function CreateHabitModal({ open, onClose }: { open: boolean; onClose: ()
                   onClick={() => toggleDay(day)}
                   className={clsx(
                     'w-9 h-9 rounded-lg text-xs font-medium border',
-                    daysOfWeek.includes(day) ? 'border-primary bg-primary/15 text-primary' : 'border-border text-text-dim'
+                    daysOfWeek.includes(day) ? 'border-accent bg-accent/15 text-accent' : 'border-border text-text-2'
                   )}
                 >
                   {WEEKDAY_LABELS[day]}
@@ -195,13 +195,13 @@ export function CreateHabitModal({ open, onClose }: { open: boolean; onClose: ()
               max={7}
               value={timesPerWeek}
               onChange={(e) => setTimesPerWeek(Math.max(1, Math.min(7, Number(e.target.value) || 1)))}
-              className="w-24 bg-surface border border-border rounded-xl px-3 py-2 text-sm outline-none focus:border-primary"
+              className="w-24 bg-surface border border-border rounded-xl px-3 py-2 text-sm outline-none focus:border-accent"
             />
           )}
         </div>
 
         <div>
-          <label className="text-xs text-text-dim mb-1.5 block">Какой стат прокачивает</label>
+          <label className="text-xs text-text-2 mb-1.5 block">Какой стат прокачивает</label>
           <div className="flex flex-wrap gap-2">
             {(Object.keys(statDefs) as StatKey[]).map((key) => (
               <button
@@ -209,7 +209,7 @@ export function CreateHabitModal({ open, onClose }: { open: boolean; onClose: ()
                 onClick={() => setStatKey(key)}
                 className={clsx(
                   'px-3 py-1.5 rounded-lg text-xs font-medium border',
-                  statKey === key ? 'border-accent bg-accent/15 text-accent' : 'border-border text-text-dim'
+                  statKey === key ? 'border-accent bg-accent/15 text-accent' : 'border-border text-text-2'
                 )}
               >
                 {statDefs[key].label}
@@ -220,23 +220,23 @@ export function CreateHabitModal({ open, onClose }: { open: boolean; onClose: ()
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="text-xs text-text-dim mb-1.5 block">Награда XP</label>
+            <label className="text-xs text-text-2 mb-1.5 block">Награда XP</label>
             <input
               type="number"
               min={0}
               value={xpReward}
               onChange={(e) => setXpReward(Number(e.target.value) || 0)}
-              className="w-full bg-surface border border-border rounded-xl px-3 py-2.5 text-sm outline-none focus:border-primary"
+              className="w-full bg-surface border border-border rounded-xl px-3 py-2.5 text-sm outline-none focus:border-accent"
             />
           </div>
           <div>
-            <label className="text-xs text-text-dim mb-1.5 block">Штраф XP</label>
+            <label className="text-xs text-text-2 mb-1.5 block">Штраф XP</label>
             <input
               type="number"
               min={0}
               value={penaltyXp}
               onChange={(e) => setPenaltyXp(Number(e.target.value) || 0)}
-              className="w-full bg-surface border border-border rounded-xl px-3 py-2.5 text-sm outline-none focus:border-primary"
+              className="w-full bg-surface border border-border rounded-xl px-3 py-2.5 text-sm outline-none focus:border-accent"
             />
           </div>
         </div>

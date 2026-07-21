@@ -18,7 +18,7 @@ export function TimerPage() {
 
       <div>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="font-display font-semibold">История</h2>
+          <h2 className="serif font-semibold">История</h2>
           <Button variant="ghost" size="sm" onClick={() => setManualOpen(true)}>
             <PencilLine size={14} /> Задним числом
           </Button>

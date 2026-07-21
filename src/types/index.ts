@@ -80,6 +80,7 @@ export interface Todo {
   projectId: string | null;
   priority: Priority;
   dueDate: string | null;
+  labels: string[];
   completed: boolean;
   completedAt: string | null;
   createdAt: string;

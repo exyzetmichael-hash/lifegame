@@ -28,7 +28,7 @@ export function HabitsPage() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
-        <h1 className="font-display text-xl font-semibold">Привычки</h1>
+        <h1 className="serif text-xl font-semibold">Привычки</h1>
         <Button variant="primary" onClick={() => setCreateOpen(true)}>
           <Plus size={16} /> Новая
         </Button>
@@ -40,7 +40,7 @@ export function HabitsPage() {
         <>
           {dueToday.length > 0 && (
             <div>
-              <h2 className="font-display font-semibold mb-3">Сегодня</h2>
+              <h2 className="serif font-semibold mb-3">Сегодня</h2>
               <div className="flex flex-col gap-2">
                 {dueToday.map((h) => (
                   <HabitRow key={h.id} habit={h} />
@@ -51,7 +51,7 @@ export function HabitsPage() {
 
           {weeklyQuota.length > 0 && (
             <div>
-              <h2 className="font-display font-semibold mb-3">На этой неделе</h2>
+              <h2 className="serif font-semibold mb-3">На этой неделе</h2>
               <div className="flex flex-col gap-2">
                 {weeklyQuota.map((h) => {
                   const completedThisWeek = logs.filter((l) => {
@@ -63,7 +63,7 @@ export function HabitsPage() {
                     <Card key={h.id} className="p-0">
                       <div className="px-3.5 py-3">
                         <HabitRow habit={h} />
-                        <div className="text-xs text-text-faint mt-2 px-1">
+                        <div className="text-xs text-text-3 mt-2 px-1">
                           {completedThisWeek}/{h.schedule.timesPerWeek} на этой неделе
                         </div>
                       </div>

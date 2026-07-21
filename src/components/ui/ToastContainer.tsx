@@ -19,23 +19,23 @@ export function ToastContainer() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -16, scale: 0.95 }}
             transition={{ type: 'spring', damping: 24, stiffness: 320 }}
-            className="pointer-events-auto glass-panel rounded-2xl px-4 py-3 flex items-center gap-3 max-w-sm w-full glow-primary"
+            className="pointer-events-auto bg-surface border border-border shadow-pop rounded-md px-4 py-3 flex items-center gap-3 max-w-sm w-full"
           >
             <div
               className={clsx(
-                'w-10 h-10 rounded-xl flex items-center justify-center shrink-0',
-                toast.type === 'level-up' ? 'bg-xp/20 text-xp' : toast.type === 'achievement' ? 'bg-primary/20 text-primary' : 'bg-accent/20 text-accent'
+                'w-10 h-10 rounded-btn flex items-center justify-center shrink-0',
+                toast.type === 'level-up' ? 'bg-p2/15 text-p2' : 'bg-accent-tint text-accent'
               )}
             >
               <IconRenderer name={toast.icon ?? 'Sparkles'} size={19} />
             </div>
             <div className="min-w-0 flex-1">
-              <div className="text-sm font-semibold font-display truncate">{toast.title}</div>
-              {toast.description && <div className="text-xs text-text-dim truncate">{toast.description}</div>}
+              <div className="text-[13.5px] font-semibold truncate">{toast.title}</div>
+              {toast.description && <div className="text-xs text-text-3 truncate">{toast.description}</div>}
             </div>
             <button
               onClick={() => dismiss(toast.id)}
-              className="text-text-faint hover:text-text shrink-0"
+              className="text-text-3 hover:text-text shrink-0"
             >
               <X size={15} />
             </button>
