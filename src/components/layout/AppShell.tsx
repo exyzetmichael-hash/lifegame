@@ -8,11 +8,13 @@ import { ReminderModal } from '@/components/timer/ReminderModal';
 import { useTimerEngine } from '@/hooks/useTimerEngine';
 import { useAchievementEvaluator } from '@/hooks/useAchievementEvaluator';
 import { useHabitPenaltySweep } from '@/hooks/useHabitPenaltySweep';
+import { useEveningHabitReminder } from '@/hooks/useEveningHabitReminder';
 
 export function AppShell({ children }: { children: ReactNode }) {
   useTimerEngine();
   useAchievementEvaluator();
   useHabitPenaltySweep();
+  useEveningHabitReminder();
 
   return (
     <div className="flex h-full min-h-screen">
