@@ -22,9 +22,10 @@ const sizeClasses: Record<Size, string> = {
   lg: 'text-base px-6 py-3.5 rounded-md gap-2.5',
 };
 
-export function Button({ variant = 'surface', size = 'md', className, ...props }: ButtonProps) {
+export function Button({ variant = 'surface', size = 'md', className, type = 'button', ...props }: ButtonProps) {
   return (
     <button
+      type={type}
       className={clsx(
         'inline-flex items-center justify-center font-medium transition-colors duration-150 active:scale-[0.97] disabled:opacity-40 disabled:pointer-events-none',
         variantClasses[variant],

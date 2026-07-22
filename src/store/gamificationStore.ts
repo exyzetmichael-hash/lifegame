@@ -1,26 +1,39 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { Achievement, AchievementCondition, Stat, StatKey, XpEvent } from '@/types';
+import type { Achievement, AchievementCondition, Stat, StatAllocation, StatDef, StatKey, XpEvent } from '@/types';
 import { levelFromXp } from '@/lib/leveling';
 import { makeId } from '@/lib/id';
 import { useToastStore } from '@/store/toastStore';
+import { stripStatFromActivities } from '@/store/activityStore';
+import { stripStatFromHabits } from '@/store/habitStore';
 
-const STAT_DEFS: Record<StatKey, { label: string; icon: string }> = {
-  body: { label: 'Тело', icon: 'Dumbbell' },
-  mind: { label: 'Разум', icon: 'BrainCircuit' },
-  focus: { label: 'Фокус', icon: 'Target' },
-  discipline: { label: 'Дисциплина', icon: 'ShieldCheck' },
-  creativity: { label: 'Креатив', icon: 'Sparkles' },
-  social: { label: 'Социум', icon: 'Users' },
-};
+const BUILTIN_STAT_DEFS: StatDef[] = [
+  { key: 'body', label: 'Тело', icon: 'Dumbbell', builtin: true },
+  { key: 'mind', label: 'Разум', icon: 'BrainCircuit', builtin: true },
+  { key: 'focus', label: 'Фокус', icon: 'Target', builtin: true },
+  { key: 'discipline', label: 'Дисциплина', icon: 'ShieldCheck', builtin: true },
+  { key: 'creativity', label: 'Креатив', icon: 'Sparkles', builtin: true },
+  { key: 'social', label: 'Социум', icon: 'Users', builtin: true },
+];
 
-function emptyStats(): Record<StatKey, Stat> {
+function defsToRecord(defs: StatDef[]): Record<StatKey, StatDef> {
+  return Object.fromEntries(defs.map((d) => [d.key, d]));
+}
+
+function emptyStats(defs: StatDef[]): Record<StatKey, Stat> {
   return Object.fromEntries(
-    (Object.keys(STAT_DEFS) as StatKey[]).map((key) => [
-      key,
-      { key, label: STAT_DEFS[key].label, icon: STAT_DEFS[key].icon, xp: 0, level: 1 },
-    ])
-  ) as Record<StatKey, Stat>;
+    defs.map((d) => [d.key, { key: d.key, label: d.label, icon: d.icon, xp: 0, level: 1 }])
+  );
+}
+
+/** Distributes `amount` across allocations proportionally to their weights (weights need not sum to 100). */
+function distribute(amount: number, allocations: StatAllocation[] | undefined): { statKey: StatKey; share: number }[] {
+  if (!allocations || allocations.length === 0) return [];
+  const totalWeight = allocations.reduce((sum, a) => sum + Math.max(0, a.percent), 0);
+  if (totalWeight <= 0) return [];
+  return allocations
+    .filter((a) => a.percent > 0)
+    .map((a) => ({ statKey: a.statKey, share: (amount * a.percent) / totalWeight }));
 }
 
 const DEFAULT_ACHIEVEMENTS: Achievement[] = [
@@ -84,11 +97,14 @@ const DEFAULT_ACHIEVEMENTS: Achievement[] = [
 interface GamificationState {
   totalXp: number;
   stats: Record<StatKey, Stat>;
+  statDefs: Record<StatKey, StatDef>;
   xpEvents: XpEvent[];
   achievements: Achievement[];
 
-  awardXp: (amount: number, reason: string, statKey?: StatKey) => void;
-  penalize: (amount: number, reason: string, statKey?: StatKey) => void;
+  awardXp: (amount: number, reason: string, allocations?: StatAllocation[]) => void;
+  penalize: (amount: number, reason: string, allocations?: StatAllocation[]) => void;
+  addStat: (input: { label: string; icon: string }) => StatDef;
+  removeStat: (key: StatKey) => void;
   addAchievement: (input: {
     name: string;
     description: string;
@@ -98,32 +114,32 @@ interface GamificationState {
   }) => void;
   removeAchievement: (id: string) => void;
   unlockAchievement: (id: string) => void;
-  statDefs: typeof STAT_DEFS;
 }
 
 export const useGamificationStore = create<GamificationState>()(
   persist(
     (set, get) => ({
       totalXp: 0,
-      stats: emptyStats(),
+      stats: emptyStats(BUILTIN_STAT_DEFS),
+      statDefs: defsToRecord(BUILTIN_STAT_DEFS),
       xpEvents: [],
       achievements: DEFAULT_ACHIEVEMENTS,
-      statDefs: STAT_DEFS,
 
-      awardXp: (amount, reason, statKey) => {
+      awardXp: (amount, reason, allocations) => {
         const levelBefore = levelFromXp(get().totalXp).level;
         set((state) => {
           const nextStats = { ...state.stats };
-          if (statKey) {
+          for (const { statKey, share } of distribute(amount, allocations)) {
             const prev = nextStats[statKey];
-            const newXp = Math.max(0, prev.xp + amount);
+            if (!prev) continue; // stat may have been deleted since the allocation was recorded
+            const newXp = Math.max(0, prev.xp + share);
             nextStats[statKey] = { ...prev, xp: newXp, level: levelFromXp(newXp).level };
           }
           const event: XpEvent = {
             id: makeId(),
             amount,
             reason,
-            statKey,
+            statAllocations: allocations,
             createdAt: new Date().toISOString(),
           };
           return {
@@ -143,8 +159,31 @@ export const useGamificationStore = create<GamificationState>()(
         }
       },
 
-      penalize: (amount, reason, statKey) => {
-        get().awardXp(-Math.abs(amount), reason, statKey);
+      penalize: (amount, reason, allocations) => {
+        get().awardXp(-Math.abs(amount), reason, allocations);
+      },
+
+      addStat: (input) => {
+        const def: StatDef = { key: makeId(), label: input.label, icon: input.icon, builtin: false };
+        set((state) => ({
+          statDefs: { ...state.statDefs, [def.key]: def },
+          stats: { ...state.stats, [def.key]: { key: def.key, label: def.label, icon: def.icon, xp: 0, level: 1 } },
+        }));
+        return def;
+      },
+
+      removeStat: (key) => {
+        const def = get().statDefs[key];
+        if (!def || def.builtin) return;
+        set((state) => {
+          const nextDefs = { ...state.statDefs };
+          const nextStats = { ...state.stats };
+          delete nextDefs[key];
+          delete nextStats[key];
+          return { statDefs: nextDefs, stats: nextStats };
+        });
+        stripStatFromActivities(key);
+        stripStatFromHabits(key);
       },
 
       addAchievement: (input) => {
@@ -187,7 +226,23 @@ export const useGamificationStore = create<GamificationState>()(
         }
       },
     }),
-    { name: 'lifequest-gamification' }
+    {
+      name: 'lifequest-gamification',
+      version: 2,
+      migrate: (persisted, version) => {
+        const state = persisted as GamificationState;
+        if (version < 2 && state?.statDefs) {
+          // Legacy shape: statDefs values were `{ label, icon }` without `key`/`builtin`.
+          state.statDefs = Object.fromEntries(
+            Object.entries(state.statDefs).map(([key, def]) => [
+              key,
+              { key, builtin: true, label: (def as StatDef).label, icon: (def as StatDef).icon },
+            ])
+          );
+        }
+        return state;
+      },
+    }
   )
 );
 

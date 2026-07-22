@@ -14,7 +14,7 @@ create table if not exists activities (
   name text not null,
   color text not null,
   icon text not null,
-  stat_key text not null check (stat_key in ('body','mind','focus','discipline','creativity','social')),
+  stat_allocations jsonb not null default '[]'::jsonb,
   created_at timestamptz not null default now(),
   archived boolean not null default false
 );
@@ -32,7 +32,9 @@ create table if not exists time_sessions (
   target_seconds integer,
   manual boolean not null default false,
   note text,
-  auto_stopped boolean not null default false
+  auto_stopped boolean not null default false,
+  xp_awarded numeric,
+  stat_allocations jsonb
 );
 
 create index if not exists time_sessions_started_at_idx on time_sessions (started_at desc);
@@ -60,7 +62,7 @@ create table if not exists habits (
   target_value numeric,
   unit text,
   schedule jsonb not null,
-  stat_key text not null check (stat_key in ('body','mind','focus','discipline','creativity','social')),
+  stat_allocations jsonb not null default '[]'::jsonb,
   xp_reward integer not null default 0,
   penalty_xp integer not null default 0,
   created_at timestamptz not null default now(),
@@ -132,7 +134,7 @@ create table if not exists xp_events (
   id text primary key,
   amount integer not null,
   reason text not null,
-  stat_key text check (stat_key in ('body','mind','focus','discipline','creativity','social')),
+  stat_allocations jsonb,
   created_at timestamptz not null default now()
 );
 
@@ -145,6 +147,7 @@ create table if not exists app_settings (
   id integer primary key default 1 check (id = 1),
   total_xp integer not null default 0,
   stats jsonb not null default '{}'::jsonb,
+  stat_defs jsonb not null default '{}'::jsonb,
   timer_settings jsonb not null default '{}'::jsonb,
   notification_settings jsonb not null default '{}'::jsonb,
   updated_at timestamptz not null default now()

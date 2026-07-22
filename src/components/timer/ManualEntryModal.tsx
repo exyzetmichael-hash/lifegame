@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { IconRenderer } from '@/components/ui/IconRenderer';
@@ -16,20 +16,30 @@ export function ManualEntryModal({ open, onClose }: { open: boolean; onClose: ()
   const activities = useMemo(() => allActivities.filter((a) => !a.archived), [allActivities]);
   const addManualEntry = useTimerStore((s) => s.addManualEntry);
 
-  const now = new Date();
-  const hourAgo = new Date(now.getTime() - 60 * 60 * 1000);
-
   const [activityId, setActivityId] = useState(activities[0]?.id ?? '');
-  const [start, setStart] = useState(toLocalInputValue(hourAgo));
-  const [end, setEnd] = useState(toLocalInputValue(now));
+  const [start, setStart] = useState('');
+  const [end, setEnd] = useState('');
   const [note, setNote] = useState('');
 
-  const startDate = new Date(start);
-  const endDate = new Date(end);
-  const valid = activityId && endDate.getTime() > startDate.getTime();
+  // Reset the form to fresh defaults every time the modal opens, and self-heal the
+  // activity pick if it's stale (e.g. the previously picked activity got archived).
+  useEffect(() => {
+    if (!open) return;
+    const now = new Date();
+    const hourAgo = new Date(now.getTime() - 60 * 60 * 1000);
+    setStart(toLocalInputValue(hourAgo));
+    setEnd(toLocalInputValue(now));
+    setNote('');
+    setActivityId((prev) => (activities.some((a) => a.id === prev) ? prev : activities[0]?.id ?? ''));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
+
+  const startDate = start ? new Date(start) : null;
+  const endDate = end ? new Date(end) : null;
+  const valid = Boolean(activityId && startDate && endDate && endDate.getTime() > startDate.getTime());
 
   function handleSave() {
-    if (!valid) return;
+    if (!valid || !startDate || !endDate) return;
     addManualEntry({
       activityId,
       startedAt: startDate.toISOString(),
@@ -43,25 +53,31 @@ export function ManualEntryModal({ open, onClose }: { open: boolean; onClose: ()
   return (
     <Modal open={open} onClose={onClose} title="Запись задним числом">
       <div className="flex flex-col gap-4">
-        <div>
-          <label className="text-xs text-text-2 mb-1.5 block">Активность</label>
-          <div className="flex flex-wrap gap-2">
-            {activities.map((a) => (
-              <button
-                key={a.id}
-                onClick={() => setActivityId(a.id)}
-                className={clsx(
-                  'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors',
-                  activityId === a.id ? 'border-transparent text-white' : 'border-border text-text-2 hover:text-text'
-                )}
-                style={activityId === a.id ? { background: a.color } : undefined}
-              >
-                <IconRenderer name={a.icon} size={14} />
-                {a.name}
-              </button>
-            ))}
+        {activities.length === 0 ? (
+          <p className="text-sm text-text-2">
+            Сначала создай хотя бы одну активность на экране таймера — иначе некуда записывать время.
+          </p>
+        ) : (
+          <div>
+            <label className="text-xs text-text-2 mb-1.5 block">Активность</label>
+            <div className="flex flex-wrap gap-2">
+              {activities.map((a) => (
+                <button
+                  key={a.id}
+                  onClick={() => setActivityId(a.id)}
+                  className={clsx(
+                    'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors',
+                    activityId === a.id ? 'border-transparent text-white' : 'border-border text-text-2 hover:text-text'
+                  )}
+                  style={activityId === a.id ? { background: a.color } : undefined}
+                >
+                  <IconRenderer name={a.icon} size={14} />
+                  {a.name}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         <div className="grid grid-cols-2 gap-3">
           <div>
@@ -80,7 +96,7 @@ export function ManualEntryModal({ open, onClose }: { open: boolean; onClose: ()
               type="datetime-local"
               value={end}
               min={start}
-              max={toLocalInputValue(now)}
+              max={toLocalInputValue(new Date())}
               onChange={(e) => setEnd(e.target.value)}
               className="w-full bg-surface border border-border rounded-xl px-2.5 py-2 text-sm outline-none focus:border-accent"
             />

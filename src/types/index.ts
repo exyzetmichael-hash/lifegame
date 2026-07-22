@@ -1,4 +1,4 @@
-export type StatKey = 'body' | 'mind' | 'focus' | 'discipline' | 'creativity' | 'social';
+export type StatKey = string;
 
 export interface Stat {
   key: StatKey;
@@ -8,12 +8,26 @@ export interface Stat {
   level: number;
 }
 
+export interface StatDef {
+  key: StatKey;
+  label: string;
+  icon: string;
+  /** Built-in stats can't be deleted, only custom ones the user added. */
+  builtin?: boolean;
+}
+
+/** Relative weight of XP routed to a stat. Weights don't need to sum to 100 — they're normalized at award time. */
+export interface StatAllocation {
+  statKey: StatKey;
+  percent: number;
+}
+
 export interface Activity {
   id: string;
   name: string;
   color: string;
   icon: string;
-  statKey: StatKey;
+  statAllocations: StatAllocation[];
   createdAt: string;
   archived?: boolean;
 }
@@ -33,6 +47,10 @@ export interface TimeSession {
   manual?: boolean;
   note?: string;
   autoStopped?: boolean;
+  /** Snapshot of the XP granted for this session, so deleting it can reverse the exact amount. */
+  xpAwarded?: number;
+  /** Snapshot of the activity's stat split at award time (activity's own split may change later). */
+  statAllocations?: StatAllocation[];
 }
 
 export type HabitKind = 'binary' | 'numeric';
@@ -54,7 +72,7 @@ export interface Habit {
   targetValue?: number;
   unit?: string;
   schedule: HabitSchedule;
-  statKey: StatKey;
+  statAllocations: StatAllocation[];
   xpReward: number;
   penaltyXp: number;
   createdAt: string;
@@ -117,7 +135,7 @@ export interface XpEvent {
   id: string;
   amount: number;
   reason: string;
-  statKey?: StatKey;
+  statAllocations?: StatAllocation[];
   createdAt: string;
 }
 

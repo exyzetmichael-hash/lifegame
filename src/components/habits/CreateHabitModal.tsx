@@ -5,15 +5,16 @@ import { Button } from '@/components/ui/Button';
 import { IconRenderer, ACTIVITY_ICON_CHOICES } from '@/components/ui/IconRenderer';
 import { ACTIVITY_COLORS } from '@/store/activityStore';
 import { useHabitStore } from '@/store/habitStore';
-import { useGamificationStore } from '@/store/gamificationStore';
-import type { HabitKind, StatKey } from '@/types';
+import { StatAllocationEditor } from '@/components/gamification/StatAllocationEditor';
+import type { HabitKind, StatAllocation } from '@/types';
+
+const DEFAULT_ALLOCATIONS: StatAllocation[] = [{ statKey: 'discipline', percent: 100 }];
 
 const WEEKDAY_LABELS = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
 const WEEKDAY_ORDER = [1, 2, 3, 4, 5, 6, 0]; // Mon..Sun for display
 
 export function CreateHabitModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const addHabit = useHabitStore((s) => s.addHabit);
-  const statDefs = useGamificationStore((s) => s.statDefs);
 
   const [name, setName] = useState('');
   const [icon, setIcon] = useState(ACTIVITY_ICON_CHOICES[0]);
@@ -24,7 +25,7 @@ export function CreateHabitModal({ open, onClose }: { open: boolean; onClose: ()
   const [scheduleType, setScheduleType] = useState<'daily' | 'weekly_count' | 'weekdays'>('daily');
   const [timesPerWeek, setTimesPerWeek] = useState(3);
   const [daysOfWeek, setDaysOfWeek] = useState<number[]>([1, 2, 3, 4, 5]);
-  const [statKey, setStatKey] = useState<StatKey>('discipline');
+  const [statAllocations, setStatAllocations] = useState<StatAllocation[]>(DEFAULT_ALLOCATIONS);
   const [xpReward, setXpReward] = useState(15);
   const [penaltyXp, setPenaltyXp] = useState(10);
 
@@ -53,7 +54,7 @@ export function CreateHabitModal({ open, onClose }: { open: boolean; onClose: ()
           : scheduleType === 'weekly_count'
             ? { type: 'weekly_count', timesPerWeek }
             : { type: 'weekdays', daysOfWeek },
-      statKey,
+      statAllocations,
       xpReward,
       penaltyXp,
     });
@@ -200,23 +201,7 @@ export function CreateHabitModal({ open, onClose }: { open: boolean; onClose: ()
           )}
         </div>
 
-        <div>
-          <label className="text-xs text-text-2 mb-1.5 block">Какой стат прокачивает</label>
-          <div className="flex flex-wrap gap-2">
-            {(Object.keys(statDefs) as StatKey[]).map((key) => (
-              <button
-                key={key}
-                onClick={() => setStatKey(key)}
-                className={clsx(
-                  'px-3 py-1.5 rounded-lg text-xs font-medium border',
-                  statKey === key ? 'border-accent bg-accent/15 text-accent' : 'border-border text-text-2'
-                )}
-              >
-                {statDefs[key].label}
-              </button>
-            ))}
-          </div>
-        </div>
+        <StatAllocationEditor value={statAllocations} onChange={setStatAllocations} />
 
         <div className="grid grid-cols-2 gap-3">
           <div>

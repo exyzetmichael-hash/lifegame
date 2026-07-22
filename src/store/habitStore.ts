@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { subDays, startOfWeek, endOfWeek, isBefore, startOfDay } from 'date-fns';
-import type { Habit, HabitKind, HabitLog, HabitSchedule, StatKey } from '@/types';
+import type { Habit, HabitKind, HabitLog, HabitSchedule, StatAllocation } from '@/types';
 import { makeId } from '@/lib/id';
 import { dateKey, isDueOnDate, weekKey } from '@/lib/habitSchedule';
 import { useGamificationStore } from '@/store/gamificationStore';
@@ -19,7 +19,7 @@ interface HabitState {
     targetValue?: number;
     unit?: string;
     schedule: HabitSchedule;
-    statKey: StatKey;
+    statAllocations: StatAllocation[];
     xpReward: number;
     penaltyXp: number;
   }) => Habit;
@@ -78,9 +78,9 @@ export const useHabitStore = create<HabitState>()(
         });
 
         if (completed && !wasCompleted) {
-          useGamificationStore.getState().awardXp(habit.xpReward, `Привычка: ${habit.name}`, habit.statKey);
+          useGamificationStore.getState().awardXp(habit.xpReward, `Привычка: ${habit.name}`, habit.statAllocations);
         } else if (!completed && wasCompleted) {
-          useGamificationStore.getState().awardXp(-habit.xpReward, `Отмена: ${habit.name}`, habit.statKey);
+          useGamificationStore.getState().awardXp(-habit.xpReward, `Отмена: ${habit.name}`, habit.statAllocations);
         }
       },
 
@@ -107,9 +107,9 @@ export const useHabitStore = create<HabitState>()(
         });
 
         if (nowCompleted && !wasCompleted) {
-          useGamificationStore.getState().awardXp(habit.xpReward, `Привычка: ${habit.name}`, habit.statKey);
+          useGamificationStore.getState().awardXp(habit.xpReward, `Привычка: ${habit.name}`, habit.statAllocations);
         } else if (!nowCompleted && wasCompleted) {
-          useGamificationStore.getState().awardXp(-habit.xpReward, `Отмена: ${habit.name}`, habit.statKey);
+          useGamificationStore.getState().awardXp(-habit.xpReward, `Отмена: ${habit.name}`, habit.statAllocations);
         }
       },
 
@@ -137,7 +137,7 @@ export const useHabitStore = create<HabitState>()(
             if (completedCount < (habit.schedule.timesPerWeek ?? 1)) {
               useGamificationStore
                 .getState()
-                .penalize(habit.penaltyXp, `Не выполнено за неделю: ${habit.name}`, habit.statKey);
+                .penalize(habit.penaltyXp, `Не выполнено за неделю: ${habit.name}`, habit.statAllocations);
             }
             newMarkers.push(marker);
             continue;
@@ -150,7 +150,7 @@ export const useHabitStore = create<HabitState>()(
             if (!isDueOnDate(habit, day)) continue;
             const key = dateKey(day);
             if (findLog(logs, habit.id, key) || newLogs.some((l) => l.habitId === habit.id && l.date === key)) continue;
-            useGamificationStore.getState().penalize(habit.penaltyXp, `Пропуск: ${habit.name}`, habit.statKey);
+            useGamificationStore.getState().penalize(habit.penaltyXp, `Пропуск: ${habit.name}`, habit.statAllocations);
             newLogs.push({ id: makeId(), habitId: habit.id, date: key, value: 0, completed: false, penalized: true });
           }
         }
@@ -163,6 +163,32 @@ export const useHabitStore = create<HabitState>()(
         }
       },
     }),
-    { name: 'lifequest-habits' }
+    {
+      name: 'lifequest-habits',
+      version: 2,
+      migrate: (persisted, version) => {
+        const state = persisted as HabitState;
+        if (version < 2 && Array.isArray(state?.habits)) {
+          state.habits = state.habits.map((h) => {
+            const legacy = h as Habit & { statKey?: string };
+            if (!h.statAllocations && legacy.statKey) {
+              return { ...h, statAllocations: [{ statKey: legacy.statKey, percent: 100 }] };
+            }
+            return h.statAllocations ? h : { ...h, statAllocations: [] };
+          });
+        }
+        return state;
+      },
+    }
   )
 );
+
+/** Strips a deleted stat out of every habit's allocations (called from gamificationStore.removeStat). */
+export function stripStatFromHabits(statKey: string) {
+  useHabitStore.setState((state) => ({
+    habits: state.habits.map((h) => ({
+      ...h,
+      statAllocations: h.statAllocations.filter((alloc) => alloc.statKey !== statKey),
+    })),
+  }));
+}

@@ -7,6 +7,7 @@ interface AppSettingsRow {
   id: number;
   total_xp: number;
   stats: unknown;
+  stat_defs: unknown;
   timer_settings: unknown;
   notification_settings: unknown;
 }
@@ -34,6 +35,9 @@ export async function bindSingletonSync(): Promise<() => void> {
     useGamificationStore.setState({
       totalXp: remote.total_xp,
       stats: remote.stats as ReturnType<typeof useGamificationStore.getState>['stats'],
+      ...(remote.stat_defs && Object.keys(remote.stat_defs as object).length > 0
+        ? { statDefs: remote.stat_defs as ReturnType<typeof useGamificationStore.getState>['statDefs'] }
+        : {}),
     });
     if (remote.timer_settings && Object.keys(remote.timer_settings as object).length > 0) {
       useTimerStore.setState({
@@ -71,6 +75,7 @@ async function pushToRemote() {
     id: 1,
     total_xp: gam.totalXp,
     stats: gam.stats,
+    stat_defs: gam.statDefs,
     timer_settings: timerSettings,
     notification_settings: {
       eveningReminderEnabled: notif.eveningReminderEnabled,

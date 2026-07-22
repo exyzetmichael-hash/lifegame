@@ -4,11 +4,12 @@ import { useTimerStore } from '@/store/timerStore';
 import { useActivityStore } from '@/store/activityStore';
 import { useNotificationStore } from '@/store/notificationStore';
 import { useThemeStore } from '@/store/themeStore';
+import { useGamificationStore } from '@/store/gamificationStore';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { IconRenderer } from '@/components/ui/IconRenderer';
+import { IconRenderer, ACTIVITY_ICON_CHOICES } from '@/components/ui/IconRenderer';
 import { isSupabaseConfigured } from '@/lib/supabase';
-import { Cloud, CloudOff, Bell, BellOff, Settings as SettingsIcon, Sun, Moon } from 'lucide-react';
+import { Cloud, CloudOff, Bell, BellOff, Settings as SettingsIcon, Sun, Moon, Plus, Trash2, Lock } from 'lucide-react';
 
 function SectionHeading({ children }: { children: React.ReactNode }) {
   return <h2 className="text-[13px] font-semibold uppercase tracking-wide text-text-3 mb-3">{children}</h2>;
@@ -74,6 +75,21 @@ export function SettingsPage() {
   const theme = useThemeStore((s) => s.theme);
   const setTheme = useThemeStore((s) => s.setTheme);
 
+  const statDefs = useGamificationStore((s) => s.statDefs);
+  const addStat = useGamificationStore((s) => s.addStat);
+  const removeStat = useGamificationStore((s) => s.removeStat);
+  const [newStatOpen, setNewStatOpen] = useState(false);
+  const [newStatLabel, setNewStatLabel] = useState('');
+  const [newStatIcon, setNewStatIcon] = useState(ACTIVITY_ICON_CHOICES[0]);
+
+  function handleAddStat() {
+    if (!newStatLabel.trim()) return;
+    addStat({ label: newStatLabel.trim(), icon: newStatIcon });
+    setNewStatLabel('');
+    setNewStatIcon(ACTIVITY_ICON_CHOICES[0]);
+    setNewStatOpen(false);
+  }
+
   const eveningReminderEnabled = useNotificationStore((s) => s.eveningReminderEnabled);
   const eveningReminderTime = useNotificationStore((s) => s.eveningReminderTime);
   const setEveningReminderEnabled = useNotificationStore((s) => s.setEveningReminderEnabled);
@@ -121,6 +137,71 @@ export function SettingsPage() {
             </button>
           </div>
         </div>
+      </Card>
+
+      <Card>
+        <SectionHeading>Статы персонажа</SectionHeading>
+        <p className="text-[12.5px] text-text-3 mb-3">
+          Каждая активность и привычка может прокачивать несколько статов сразу — настраивается при создании.
+        </p>
+        <div className="flex flex-col">
+          {Object.values(statDefs).map((def) => (
+            <div key={def.key} className="flex items-center gap-3 py-2.5 border-b border-border last:border-0">
+              <span className="w-7 h-7 rounded-btn bg-sunken text-text-2 flex items-center justify-center shrink-0">
+                <IconRenderer name={def.icon} size={14} />
+              </span>
+              <span className="text-[13.5px] flex-1 truncate">{def.label}</span>
+              {def.builtin ? (
+                <Lock size={13} className="text-text-3 shrink-0" />
+              ) : (
+                <button onClick={() => removeStat(def.key)} className="text-text-3 hover:text-p1 shrink-0">
+                  <Trash2 size={14} />
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {newStatOpen ? (
+          <div className="flex items-center gap-2 mt-3 p-2.5 rounded-btn bg-sunken">
+            <div className="flex flex-wrap gap-1 shrink-0">
+              {ACTIVITY_ICON_CHOICES.slice(0, 8).map((ic) => (
+                <button
+                  key={ic}
+                  onClick={() => setNewStatIcon(ic)}
+                  className={clsx(
+                    'w-7 h-7 rounded-lg flex items-center justify-center border shrink-0',
+                    newStatIcon === ic ? 'border-accent bg-accent-tint text-accent' : 'border-border text-text-2'
+                  )}
+                >
+                  <IconRenderer name={ic} size={13} />
+                </button>
+              ))}
+            </div>
+            <input
+              autoFocus
+              value={newStatLabel}
+              onChange={(e) => setNewStatLabel(e.target.value)}
+              placeholder="Название статы"
+              onKeyDown={(e) => e.key === 'Enter' && handleAddStat()}
+              className="flex-1 bg-surface border border-border rounded-sm px-2.5 py-1.5 text-sm outline-none focus:border-accent min-w-0"
+            />
+            <button
+              onClick={handleAddStat}
+              disabled={!newStatLabel.trim()}
+              className="text-xs font-semibold text-accent disabled:opacity-40 shrink-0 px-1"
+            >
+              Добавить
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={() => setNewStatOpen(true)}
+            className="flex items-center gap-1.5 text-xs text-accent hover:text-accent-hover font-medium mt-3"
+          >
+            <Plus size={14} /> Своя стата
+          </button>
+        )}
       </Card>
 
       <Card>

@@ -117,8 +117,10 @@ function finalizeAndReward(session: ActiveSession, countedSeconds: number, ended
     useGamificationStore.getState().awardXp(
       xp,
       `${activity?.name ?? 'Активность'}: ${Math.round(countedSeconds / 60)} мин`,
-      activity?.statKey
+      activity?.statAllocations
     );
+    completed.xpAwarded = xp;
+    completed.statAllocations = activity?.statAllocations;
   }
   return completed;
 }
@@ -285,11 +287,14 @@ export const useTimerStore = create<TimerState>()(
           note,
         };
         if (seconds > 0) {
+          const xp = xpForSeconds(seconds);
           useGamificationStore.getState().awardXp(
-            xpForSeconds(seconds),
+            xp,
             `${activity?.name ?? 'Активность'} (вручную): ${Math.round(seconds / 60)} мин`,
-            activity?.statKey
+            activity?.statAllocations
           );
+          entry.xpAwarded = xp;
+          entry.statAllocations = activity?.statAllocations;
         }
         set((state) => ({ sessions: [entry, ...state.sessions] }));
       },
@@ -299,6 +304,15 @@ export const useTimerStore = create<TimerState>()(
       },
 
       deleteSession: (id) => {
+        const session = get().sessions.find((s) => s.id === id);
+        if (session?.xpAwarded) {
+          const activity = getActivity(session.activityId);
+          useGamificationStore.getState().awardXp(
+            -session.xpAwarded,
+            `Удалена запись: ${activity?.name ?? 'Активность'}`,
+            session.statAllocations
+          );
+        }
         set((state) => ({ sessions: state.sessions.filter((s) => s.id !== id) }));
       },
     }),
