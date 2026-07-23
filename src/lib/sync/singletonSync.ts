@@ -2,6 +2,7 @@ import { supabase } from '@/lib/supabase';
 import { useGamificationStore } from '@/store/gamificationStore';
 import { useTimerStore } from '@/store/timerStore';
 import { useNotificationStore } from '@/store/notificationStore';
+import { useSyncStatusStore } from '@/store/syncStatusStore';
 
 interface AppSettingsRow {
   id: number;
@@ -23,11 +24,17 @@ export async function bindSingletonSync(): Promise<() => void> {
   const { data, error } = await supabase.from('app_settings').select('*').eq('id', 1).maybeSingle();
   if (error) {
     console.error('[LifeQuest sync] fetch app_settings failed:', error.message);
+    useSyncStatusStore.getState().reportError(`app_settings: ${error.message}`);
+    // Remote state is unknown — don't guess it's "empty" and push over it, and
+    // don't leave local progress looking wiped either. Just bail; the watcher
+    // below will keep retrying pushes as local state changes.
+  } else {
+    useSyncStatusStore.getState().reportOk();
   }
-  const remote = data as AppSettingsRow | null;
+  const remote = error ? null : (data as AppSettingsRow | null);
 
   const localTotalXp = useGamificationStore.getState().totalXp;
-  const remoteLooksEmpty = !remote || isDefaultGamification(remote.total_xp);
+  const remoteLooksEmpty = !error && (!remote || isDefaultGamification(remote.total_xp));
 
   if (remoteLooksEmpty && localTotalXp > 0) {
     await pushToRemote();
@@ -84,5 +91,10 @@ async function pushToRemote() {
     },
     updated_at: new Date().toISOString(),
   });
-  if (error) console.error('[LifeQuest sync] push app_settings failed:', error.message);
+  if (error) {
+    console.error('[LifeQuest sync] push app_settings failed:', error.message);
+    useSyncStatusStore.getState().reportError(`app_settings: ${error.message}`);
+  } else {
+    useSyncStatusStore.getState().reportOk();
+  }
 }

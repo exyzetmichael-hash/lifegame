@@ -1,5 +1,6 @@
 import type { StoreApi } from 'zustand';
 import { supabase } from '@/lib/supabase';
+import { useSyncStatusStore } from '@/store/syncStatusStore';
 
 interface CollectionSyncOptions<T extends { id: string }, S> {
   table: string;
@@ -13,29 +14,30 @@ interface CollectionSyncOptions<T extends { id: string }, S> {
   debounceMs?: number;
 }
 
-/** Fetches all rows for a table, ordered by nothing in particular (client sorts as needed). */
-async function fetchAll<T>(table: string, fromRow: (row: Record<string, unknown>) => T): Promise<T[]> {
-  if (!supabase) return [];
-  const { data, error } = await supabase.from(table).select('*');
-  if (error) {
-    console.error(`[LifeQuest sync] fetch ${table} failed:`, error.message);
-    return [];
-  }
-  return (data ?? []).map(fromRow);
-}
-
 /** One-time hydration: pushes local rows up if the remote table is empty, otherwise pulls remote down. */
 async function hydrate<T extends { id: string }, S>(opts: CollectionSyncOptions<T, S>): Promise<void> {
   if (!supabase) return;
-  const remote = await fetchAll(opts.table, opts.fromRow);
+  const { data, error } = await supabase.from(opts.table).select('*');
+  if (error) {
+    console.error(`[LifeQuest sync] fetch ${opts.table} failed:`, error.message);
+    useSyncStatusStore.getState().reportError(`${opts.table}: ${error.message}`);
+    // Remote state is unknown (not confirmed empty) — leave local alone and don't push,
+    // to avoid clobbering good local data or inserting on top of rows we just couldn't see.
+    return;
+  }
+  useSyncStatusStore.getState().reportOk();
+  const remote = (data ?? []).map(opts.fromRow);
   if (remote.length > 0) {
     opts.setItems(remote);
     return;
   }
   const local = opts.getItems(opts.store.getState());
   if (local.length > 0) {
-    const { error } = await supabase.from(opts.table).insert(local.map(opts.toRow));
-    if (error) console.error(`[LifeQuest sync] initial push ${opts.table} failed:`, error.message);
+    const { error: insertError } = await supabase.from(opts.table).insert(local.map(opts.toRow));
+    if (insertError) {
+      console.error(`[LifeQuest sync] initial push ${opts.table} failed:`, insertError.message);
+      useSyncStatusStore.getState().reportError(`${opts.table}: ${insertError.message}`);
+    }
   }
 }
 
@@ -56,11 +58,19 @@ function watch<T extends { id: string }, S>(opts: CollectionSyncOptions<T, S>): 
 
       if (items.length > 0) {
         const { error } = await supabase.from(opts.table).upsert(items.map(opts.toRow));
-        if (error) console.error(`[LifeQuest sync] push ${opts.table} failed:`, error.message);
+        if (error) {
+          console.error(`[LifeQuest sync] push ${opts.table} failed:`, error.message);
+          useSyncStatusStore.getState().reportError(`${opts.table}: ${error.message}`);
+        } else {
+          useSyncStatusStore.getState().reportOk();
+        }
       }
       if (toDelete.length > 0) {
         const { error } = await supabase.from(opts.table).delete().in('id', toDelete);
-        if (error) console.error(`[LifeQuest sync] delete ${opts.table} failed:`, error.message);
+        if (error) {
+          console.error(`[LifeQuest sync] delete ${opts.table} failed:`, error.message);
+          useSyncStatusStore.getState().reportError(`${opts.table}: ${error.message}`);
+        }
       }
     }, opts.debounceMs ?? 800);
   });

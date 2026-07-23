@@ -18,6 +18,7 @@ import { useTimerStore } from '@/store/timerStore';
 import { useHabitStore } from '@/store/habitStore';
 import { useTodoStore } from '@/store/todoStore';
 import { useGamificationStore } from '@/store/gamificationStore';
+import { useSyncStatusStore } from '@/store/syncStatusStore';
 
 /**
  * One-time hydration + ongoing bidirectional-ish sync (local is authoritative
@@ -31,6 +32,7 @@ export function useSupabaseSync() {
   useEffect(() => {
     if (!isSupabaseConfigured || started.current) return;
     started.current = true;
+    useSyncStatusStore.getState().setConnecting();
 
     let unsubs: Array<() => void> = [];
     let cancelled = false;

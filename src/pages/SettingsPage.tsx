@@ -5,11 +5,12 @@ import { useActivityStore } from '@/store/activityStore';
 import { useNotificationStore } from '@/store/notificationStore';
 import { useThemeStore } from '@/store/themeStore';
 import { useGamificationStore } from '@/store/gamificationStore';
+import { useSyncStatusStore } from '@/store/syncStatusStore';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { IconRenderer, ACTIVITY_ICON_CHOICES } from '@/components/ui/IconRenderer';
 import { isSupabaseConfigured } from '@/lib/supabase';
-import { Cloud, CloudOff, Bell, BellOff, Settings as SettingsIcon, Sun, Moon, Plus, Trash2, Lock } from 'lucide-react';
+import { Cloud, CloudOff, CloudAlert, Bell, BellOff, Settings as SettingsIcon, Sun, Moon, Plus, Trash2, Lock } from 'lucide-react';
 
 function SectionHeading({ children }: { children: React.ReactNode }) {
   return <h2 className="text-[13px] font-semibold uppercase tracking-wide text-text-3 mb-3">{children}</h2>;
@@ -78,6 +79,10 @@ export function SettingsPage() {
   const statDefs = useGamificationStore((s) => s.statDefs);
   const addStat = useGamificationStore((s) => s.addStat);
   const removeStat = useGamificationStore((s) => s.removeStat);
+
+  const syncState = useSyncStatusStore((s) => s.state);
+  const syncError = useSyncStatusStore((s) => s.lastError);
+  const lastSyncAt = useSyncStatusStore((s) => s.lastSyncAt);
   const [newStatOpen, setNewStatOpen] = useState(false);
   const [newStatLabel, setNewStatLabel] = useState('');
   const [newStatIcon, setNewStatIcon] = useState(ACTIVITY_ICON_CHOICES[0]);
@@ -206,14 +211,38 @@ export function SettingsPage() {
 
       <Card>
         <div className="flex items-center gap-2 mb-1">
-          {isSupabaseConfigured ? <Cloud size={16} className="text-success" /> : <CloudOff size={16} className="text-p2" />}
+          {!isSupabaseConfigured || syncState === 'disabled' ? (
+            <CloudOff size={16} className="text-text-3" />
+          ) : syncState === 'error' ? (
+            <CloudAlert size={16} className="text-p1" />
+          ) : syncState === 'ok' ? (
+            <Cloud size={16} className="text-success" />
+          ) : (
+            <Cloud size={16} className="text-text-3" />
+          )}
           <SectionHeading>Синхронизация</SectionHeading>
         </div>
-        <p className="text-sm text-text-2">
-          {isSupabaseConfigured
-            ? 'Подключено к Supabase — данные синхронизируются в облаке.'
-            : 'Пока работаем локально в этом браузере. Чтобы включить облачную синхронизацию между устройствами, подключим Supabase.'}
-        </p>
+        {!isSupabaseConfigured ? (
+          <p className="text-sm text-text-2">
+            Пока работаем локально в этом браузере. Чтобы включить облачную синхронизацию между устройствами, подключим Supabase.
+          </p>
+        ) : syncState === 'error' ? (
+          <>
+            <p className="text-sm text-p1">Ошибка синхронизации: {syncError}</p>
+            <p className="text-[12.5px] text-text-3 mt-1.5">
+              Похоже, в базе Supabase не хватает таблиц или колонок. Открой SQL Editor своего проекта на supabase.com
+              и выполни файл <code className="text-text-2">supabase/schema.sql</code> из репозитория ещё раз — он
+              безопасно доносит недостающие изменения, не трогая уже сохранённые данные.
+            </p>
+          </>
+        ) : syncState === 'ok' ? (
+          <p className="text-sm text-text-2">
+            Подключено к Supabase — данные синхронизируются в облаке
+            {lastSyncAt ? ` (последний раз: ${new Date(lastSyncAt).toLocaleTimeString('ru-RU')})` : ''}.
+          </p>
+        ) : (
+          <p className="text-sm text-text-2">Подключаемся к Supabase…</p>
+        )}
       </Card>
 
       <Card>
