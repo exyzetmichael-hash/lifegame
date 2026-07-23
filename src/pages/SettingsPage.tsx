@@ -9,8 +9,24 @@ import { useSyncStatusStore } from '@/store/syncStatusStore';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { IconRenderer, ACTIVITY_ICON_CHOICES } from '@/components/ui/IconRenderer';
+import { CreateActivityModal } from '@/components/timer/CreateActivityModal';
 import { isSupabaseConfigured } from '@/lib/supabase';
-import { Cloud, CloudOff, CloudAlert, Bell, BellOff, Settings as SettingsIcon, Sun, Moon, Plus, Trash2, Lock } from 'lucide-react';
+import type { Activity } from '@/types';
+import {
+  Cloud,
+  CloudOff,
+  CloudAlert,
+  Bell,
+  BellOff,
+  Settings as SettingsIcon,
+  Sun,
+  Moon,
+  Plus,
+  Trash2,
+  Lock,
+  Pencil,
+  ArchiveRestore,
+} from 'lucide-react';
 
 function SectionHeading({ children }: { children: React.ReactNode }) {
   return <h2 className="text-[13px] font-semibold uppercase tracking-wide text-text-3 mb-3">{children}</h2>;
@@ -68,7 +84,10 @@ export function SettingsPage() {
   const updateSettings = useTimerStore((s) => s.updateSettings);
   const allActivities = useActivityStore((s) => s.activities);
   const activities = useMemo(() => allActivities.filter((a) => !a.archived), [allActivities]);
+  const archivedActivities = useMemo(() => allActivities.filter((a) => a.archived), [allActivities]);
   const archiveActivity = useActivityStore((s) => s.archiveActivity);
+  const unarchiveActivity = useActivityStore((s) => s.unarchiveActivity);
+  const [editActivity, setEditActivity] = useState<Activity | null>(null);
   const budgets = useActivityStore((s) => s.budgets);
   const setBudget = useActivityStore((s) => s.setBudget);
   const removeBudget = useActivityStore((s) => s.removeBudget);
@@ -351,6 +370,9 @@ export function SettingsPage() {
                   className="w-16 bg-surface border border-border rounded-sm px-2 py-1.5 text-sm text-right outline-none focus:border-accent"
                 />
                 <span className="text-xs text-text-3 w-8">ч/нед</span>
+                <button onClick={() => setEditActivity(a)} className="text-text-3 hover:text-accent shrink-0">
+                  <Pencil size={13} />
+                </button>
                 <button onClick={() => archiveActivity(a.id)} className="text-xs text-text-3 hover:text-p1 shrink-0">
                   Архив
                 </button>
@@ -358,7 +380,32 @@ export function SettingsPage() {
             );
           })}
         </div>
+
+        {archivedActivities.length > 0 && (
+          <>
+            <p className="text-[12px] text-text-3 mt-4 mb-1.5">В архиве</p>
+            <div className="flex flex-col">
+              {archivedActivities.map((a) => (
+                <div key={a.id} className="flex items-center gap-3 py-2 border-b border-border last:border-0 text-text-3">
+                  <span className="w-2 h-2 rounded-full shrink-0 opacity-50" style={{ background: a.color }} />
+                  <span className="text-[13px] flex-1 truncate flex items-center gap-2">
+                    <IconRenderer name={a.icon} size={13} />
+                    {a.name}
+                  </span>
+                  <button
+                    onClick={() => unarchiveActivity(a.id)}
+                    className="flex items-center gap-1 text-xs text-accent hover:text-accent-hover shrink-0"
+                  >
+                    <ArchiveRestore size={13} /> Восстановить
+                  </button>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
       </Card>
+
+      <CreateActivityModal open={Boolean(editActivity)} onClose={() => setEditActivity(null)} activity={editActivity} />
     </div>
   );
 }

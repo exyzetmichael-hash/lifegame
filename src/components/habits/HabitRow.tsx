@@ -1,14 +1,14 @@
 import { useMemo } from 'react';
 import clsx from 'clsx';
 import { motion } from 'framer-motion';
-import { Check, Flame, Minus, Plus } from 'lucide-react';
+import { Check, Flame, Minus, Pencil, Plus } from 'lucide-react';
 import type { Habit } from '@/types';
 import { useHabitStore } from '@/store/habitStore';
 import { IconRenderer } from '@/components/ui/IconRenderer';
 import { dateKey } from '@/lib/habitSchedule';
 import { calcStreak } from '@/lib/habitStreak';
 
-export function HabitRow({ habit }: { habit: Habit }) {
+export function HabitRow({ habit, onEdit }: { habit: Habit; onEdit?: (habit: Habit) => void }) {
   const logs = useHabitStore((s) => s.logs);
   const setBinary = useHabitStore((s) => s.setBinary);
   const setNumericValue = useHabitStore((s) => s.setNumericValue);
@@ -47,6 +47,15 @@ export function HabitRow({ habit }: { habit: Habit }) {
           )}
         </div>
       </div>
+
+      {onEdit && (
+        <button
+          onClick={() => onEdit(habit)}
+          className="text-text-3 hover:text-accent shrink-0 w-7 h-7 flex items-center justify-center"
+        >
+          <Pencil size={14} />
+        </button>
+      )}
 
       {habit.kind === 'binary' ? (
         <motion.button

@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import { format, isPast, isToday } from 'date-fns';
 import { ru } from 'date-fns/locale';
-import { Plus, Inbox, CalendarDays, Tag } from 'lucide-react';
+import { Plus, Inbox, CalendarDays, Tag, Pencil } from 'lucide-react';
 import { useTodoStore } from '@/store/todoStore';
 import { QuickAddTodo } from '@/components/todos/QuickAddTodo';
 import { TodoRow } from '@/components/todos/TodoRow';
@@ -26,6 +26,7 @@ export function TodosPage() {
   const projects = useTodoStore((s) => s.projects);
   const [searchParams] = useSearchParams();
   const [projectModalOpen, setProjectModalOpen] = useState(false);
+  const [editProjectOpen, setEditProjectOpen] = useState(false);
   const [showCompleted, setShowCompleted] = useState(false);
 
   const projectId = searchParams.get('project');
@@ -92,6 +93,14 @@ export function TodosPage() {
             {view === 'upcoming' && 'Предстоящее'}
             {view === 'label' && label}
             {view === 'project' && project?.name}
+            {view === 'project' && project && (
+              <button
+                onClick={() => setEditProjectOpen(true)}
+                className="text-text-3 hover:text-accent shrink-0"
+              >
+                <Pencil size={14} />
+              </button>
+            )}
           </h2>
         )}
         <button
@@ -163,6 +172,9 @@ export function TodosPage() {
       )}
 
       <CreateProjectModal open={projectModalOpen} onClose={() => setProjectModalOpen(false)} />
+      {project && (
+        <CreateProjectModal open={editProjectOpen} onClose={() => setEditProjectOpen(false)} project={project} />
+      )}
     </div>
   );
 }

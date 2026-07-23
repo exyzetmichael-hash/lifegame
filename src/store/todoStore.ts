@@ -11,6 +11,7 @@ interface TodoState {
   todos: Todo[];
 
   addProject: (input: { name: string; color: string }) => Project;
+  updateProject: (id: string, patch: Partial<Omit<Project, 'id'>>) => void;
   deleteProject: (id: string) => void;
 
   addTodo: (input: {
@@ -37,6 +38,10 @@ export const useTodoStore = create<TodoState>()(
         const project: Project = { id: makeId(), createdAt: new Date().toISOString(), ...input };
         set((state) => ({ projects: [...state.projects, project] }));
         return project;
+      },
+
+      updateProject: (id, patch) => {
+        set((state) => ({ projects: state.projects.map((p) => (p.id === id ? { ...p, ...patch } : p)) }));
       },
 
       deleteProject: (id) => {

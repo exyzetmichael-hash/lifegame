@@ -25,6 +25,7 @@ interface HabitState {
   }) => Habit;
   updateHabit: (id: string, patch: Partial<Omit<Habit, 'id'>>) => void;
   archiveHabit: (id: string) => void;
+  unarchiveHabit: (id: string) => void;
 
   setBinary: (habitId: string, date: Date, completed: boolean) => void;
   setNumericValue: (habitId: string, date: Date, value: number) => void;
@@ -58,6 +59,10 @@ export const useHabitStore = create<HabitState>()(
 
       archiveHabit: (id) => {
         set((state) => ({ habits: state.habits.map((h) => (h.id === id ? { ...h, archived: true } : h)) }));
+      },
+
+      unarchiveHabit: (id) => {
+        set((state) => ({ habits: state.habits.map((h) => (h.id === id ? { ...h, archived: false } : h)) }));
       },
 
       setBinary: (habitId, date, completed) => {

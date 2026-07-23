@@ -19,6 +19,7 @@ interface ActivityState {
   addActivity: (input: { name: string; color: string; icon: string; statAllocations: StatAllocation[] }) => Activity;
   updateActivity: (id: string, patch: Partial<Omit<Activity, 'id'>>) => void;
   archiveActivity: (id: string) => void;
+  unarchiveActivity: (id: string) => void;
   setBudget: (activityId: string, targetHoursPerWeek: number) => void;
   removeBudget: (activityId: string) => void;
 }
@@ -48,6 +49,12 @@ export const useActivityStore = create<ActivityState>()(
       archiveActivity: (id) => {
         set((state) => ({
           activities: state.activities.map((a) => (a.id === id ? { ...a, archived: true } : a)),
+        }));
+      },
+
+      unarchiveActivity: (id) => {
+        set((state) => ({
+          activities: state.activities.map((a) => (a.id === id ? { ...a, archived: false } : a)),
         }));
       },
 
